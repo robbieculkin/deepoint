@@ -6,25 +6,29 @@ import numpy as np
 from OpenGL.GL import *
 
 
-class Triangle(ImageObject):
+class Background(ImageObject):
 
     def __init__(self, base_color):
         ImageObject.__init__(self, base_color)
+        position = -10
+        coord = 10
         self.vertices = [
-            [-0.5, 0.0, 0.0],
-            [0.0, 0.5, 0.0],
-            [0.5, 0.0, 0.0]
+            (coord, coord, position),
+            (coord, -coord, position),
+            (-coord, -coord, position),
+            (-coord, coord, position)
         ]
         self.tex_coords = [
             (0.0, 0.0),
             (1.0, 0.0),
-            (0.5, 1.0)
+            (1.0, 1.0),
+            (0.0, 1.0),
+        ]
+        self.normals = [
+            (0, 0, 1.0)
         ]
 
-        # tweak image shape
-        self.vertices[0][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
-        self.vertices[1][1] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
-        self.vertices[2][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
+        # apply a blur to the texture image
 
     def render(self, vertex_highlighting=False):
         """
@@ -35,19 +39,14 @@ class Triangle(ImageObject):
         if self.has_texture:
             glBindTexture(GL_TEXTURE_2D, self.texture_id)
 
-        self.transform_rot_pos()
+        # glScale(5, 5, 1) 
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(*v)
-            glEnd()
-
-        glColor(*self.color)
-        glBegin(GL_TRIANGLES)
+        glColor(self.base_color, self.base_color, self.base_color)
+        glBegin(GL_QUADS)
         for i in range(0, len(self.vertices)):
+            glNormal3d(*self.normals[0])
             if self.has_texture:
                 glTexCoord(*self.tex_coords[i])
             glVertex(*self.vertices[i])
         glEnd()
+

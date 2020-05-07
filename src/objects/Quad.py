@@ -6,25 +6,28 @@ import numpy as np
 from OpenGL.GL import *
 
 
-class Triangle(ImageObject):
+class Quad(ImageObject):
 
     def __init__(self, base_color):
         ImageObject.__init__(self, base_color)
         self.vertices = [
-            [-0.5, 0.0, 0.0],
-            [0.0, 0.5, 0.0],
-            [0.5, 0.0, 0.0]
+            [-0.5, 0.5, 0.0],
+            [0.5, 0.5, 0.0],
+            [0.5, -0.5, 0.0],
+            [-0.5, -0.5, 0.0]
         ]
         self.tex_coords = [
             (0.0, 0.0),
             (1.0, 0.0),
-            (0.5, 1.0)
+            (1.0, 1.0),
+            (0.0, 1.0)
         ]
 
         # tweak image shape
         self.vertices[0][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
         self.vertices[1][1] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
         self.vertices[2][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
+        self.vertices[3][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
 
     def render(self, vertex_highlighting=False):
         """
@@ -45,7 +48,7 @@ class Triangle(ImageObject):
             glEnd()
 
         glColor(*self.color)
-        glBegin(GL_TRIANGLES)
+        glBegin(GL_QUADS)
         for i in range(0, len(self.vertices)):
             if self.has_texture:
                 glTexCoord(*self.tex_coords[i])
