@@ -47,6 +47,11 @@ from objects.Background import Background
 # SCREEN_SIZE = (640, 480)
 SCREEN_SIZE = (200, 200)
 TEXTURE_DIM = (128, 128)
+# if 0, treat it as if it were a mac display, where the screen buffer only reads one 
+# quarter of the information
+# if 1, treat it as if it were a bigger dislpay, where the screen can buffer the entire 
+# thing with the appropriate indexing
+DISPLAY_MODE = 0
 
 NONE_PROB = 0.25
 OBJECT_DEFS = {
@@ -97,34 +102,41 @@ def renderObjects(ObjectList, render_vertices):
 #!!! Might have to change
 def screen_capture():
     glReadBuffer(GL_BACK)
+
     # reading pixels from the rendered screen
-    pxLoLeft = glReadPixels(0, 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-    pxLoRight = glReadPixels(SCREEN_SIZE[0], 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-    pxHiLeft = glReadPixels(0, SCREEN_SIZE[1], SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-    pxHiRight = glReadPixels(SCREEN_SIZE[0], SCREEN_SIZE[1], SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-    pixels = [pxLoLeft, pxLoRight, pxHiLeft, pxHiRight]
+    if DISPLAY_MODE == 0:
+        pxLoLeft = glReadPixels(0, 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
+        pxLoRight = glReadPixels(SCREEN_SIZE[0], 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
+        pxHiLeft = glReadPixels(0, SCREEN_SIZE[1], SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
+        pxHiRight = glReadPixels(SCREEN_SIZE[0], SCREEN_SIZE[1], SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
+        pixels = [pxLoLeft, pxLoRight, pxHiLeft, pxHiRight]
+        # saving pixels to an image
+        resultImage = Image.new("RGB", (SCREEN_SIZE[0]*2, SCREEN_SIZE[1]*2))
 
-    # saving pixels to an image
-    resultImage = Image.new("RGB", (SCREEN_SIZE[0]*2, SCREEN_SIZE[1]*2))
+        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[2])
+        image = image.transpose( Image.FLIP_TOP_BOTTOM )
+        resultImage.paste(image, None)
 
-    image = Image.frombytes("RGB", SCREEN_SIZE, pixels[2])
-    image = image.transpose( Image.FLIP_TOP_BOTTOM )
-    resultImage.paste(image, None)
+        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[3])
+        image = image.transpose( Image.FLIP_TOP_BOTTOM )
+        resultImage.paste(image, (SCREEN_SIZE[0], 0))
 
-    image = Image.frombytes("RGB", SCREEN_SIZE, pixels[3])
-    image = image.transpose( Image.FLIP_TOP_BOTTOM )
-    resultImage.paste(image, (SCREEN_SIZE[0], 0))
+        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[0])
+        image = image.transpose( Image.FLIP_TOP_BOTTOM )
+        resultImage.paste(image, (0, SCREEN_SIZE[1]))
 
-    image = Image.frombytes("RGB", SCREEN_SIZE, pixels[0])
-    image = image.transpose( Image.FLIP_TOP_BOTTOM )
-    resultImage.paste(image, (0, SCREEN_SIZE[1]))
+        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[1])
+        image = image.transpose( Image.FLIP_TOP_BOTTOM )
+        resultImage.paste(image, (SCREEN_SIZE[0], SCREEN_SIZE[1]))
+        
+        # resize the image
+        resizedImage = resultImage.resize(SCREEN_SIZE)
 
-    image = Image.frombytes("RGB", SCREEN_SIZE, pixels[1])
-    image = image.transpose( Image.FLIP_TOP_BOTTOM )
-    resultImage.paste(image, (SCREEN_SIZE[0], SCREEN_SIZE[1]))
-    
-    # resize the image
-    resizedImage = resultImage.resize(SCREEN_SIZE)
+    elif DISPLAY_MODE == 1:
+        pixels = glReadPixels(0, 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
+        image = Image.frombytes("RGB", SCREEN_SIZE, pixels)
+        image = image.transpose( Image.FLIP_TOP_BOTTOM )
+        resizedImage = image
 
     return resizedImage
 
@@ -155,7 +167,11 @@ def resize(width, height):
     """
     Re-calculate portions of the viewport such that rendering looks proper
     """
-    glViewport(0, 0, width*2, height*2) #!!! Might Have to Change
+    if DISPLAY_MODE == 0:
+        glViewport(0, 0, width*2, height*2) #!!! Might Have to Change
+    elif DISPLAY_MODE == 1:
+        glViewport(0, 0, width, height) #!!! Might Have to Change
+
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(60.0, float(width)/float(height), 0.1, 1000.0)
