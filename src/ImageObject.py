@@ -9,6 +9,7 @@ from texture import salt_and_pepper, random_uniform, AdvancedTextures
 
 import random
 import numpy as np
+import os
 
 from abc import ABC, abstractmethod
 from OpenGL.GL import *
@@ -64,7 +65,8 @@ class ImageObject(ABC):
         # roll the dice to see what texture to use
         texture_idx = random.randint(1, 5)
         # loading texture image
-        self.texture = pygame.image.load("textures/texture{}.png".format(texture_idx))
+        texture_path = os.path.join(os.path.dirname(__file__), "textures/texture{}.png".format(texture_idx))
+        self.texture = pygame.image.load(texture_path)
         self.texture_data = pygame.image.tostring(self.texture, 'RGB', True)
         # loading texture id
         self.texture_id = glGenTextures(1)

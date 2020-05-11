@@ -22,6 +22,7 @@ import numpy as np
 import cv2
 import time
 import threading
+import os
 
 import pygame
 from pygame.locals import *
@@ -79,11 +80,11 @@ def renderTextures():
     img_marble = gaussian_filter(img_marble, sigma=sigmas[4])
 
     # save the images
-    plt.imsave('textures/texture1.png', img_random, cmap='gray', vmin=0, vmax=255)
-    plt.imsave('textures/texture2.png', img_snp, cmap='gray', vmin=0, vmax=255)
-    plt.imsave('textures/texture3.png', img_cloud, cmap='gray', vmin=0, vmax=255)
-    plt.imsave('textures/texture4.png', img_wood, cmap='gray', vmin=0, vmax=255)
-    plt.imsave('textures/texture5.png', img_marble, cmap='gray', vmin=0, vmax=255)
+    plt.imsave( os.path.join(os.path.dirname(__file__), 'textures/texture1.png'), img_random, cmap='gray', vmin=0, vmax=255)
+    plt.imsave( os.path.join(os.path.dirname(__file__), 'textures/texture2.png'), img_snp, cmap='gray', vmin=0, vmax=255)
+    plt.imsave( os.path.join(os.path.dirname(__file__), 'textures/texture3.png'), img_cloud, cmap='gray', vmin=0, vmax=255)
+    plt.imsave( os.path.join(os.path.dirname(__file__), 'textures/texture4.png'), img_wood, cmap='gray', vmin=0, vmax=255)
+    plt.imsave( os.path.join(os.path.dirname(__file__), 'textures/texture5.png'), img_marble, cmap='gray', vmin=0, vmax=255)
 
 def renderObjects(ObjectList, render_vertices):
 
