@@ -300,6 +300,8 @@ def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, obj
         if not test:
             frame = (frame + 1) % frames_per_count
 
-def generate_images(object_types=[], count=1, object_count=1):
+def generate_images(object_types=[], count=1000, object_count=1):
     # yield all the images that you want
-    pass
+    result = render(display_mode=0, screen_size=(200, 200), object_types=object_types, count=count, object_count=object_count, frames_per_count=5, test=False)
+    result = highlight_vertices(result)
+    yield result
