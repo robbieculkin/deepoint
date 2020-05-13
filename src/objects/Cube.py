@@ -91,12 +91,6 @@ class Cube(ImageObject):
 
         self.transform_rot_pos()
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(*v)
-            glEnd()
 
         glColor(*self.color)
         glBegin(GL_QUADS)
@@ -114,7 +108,7 @@ class Cube(ImageObject):
                 i += 1
         glEnd()
 
-        glLineWidth(50)
+        glLineWidth(1)
         glColor(*self.line_color)
         glBegin(GL_LINES)
         for face_no in range(0, len(self.vertex_indices)):
@@ -135,3 +129,9 @@ class Cube(ImageObject):
 
         glEnd()
         
+        if vertex_highlighting:
+            glColor(*ImageObject.VERTEX_COLOR)
+            glBegin(GL_POINTS)
+            for v in self.vertices:
+                glVertex(*v)
+            glEnd()

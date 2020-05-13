@@ -36,12 +36,6 @@ class Star(ImageObject):
         self.transform_rot_pos()
         glLineWidth(self.width)
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(*v)
-            glEnd()
 
         glColor(*self.color)
         glBegin(GL_LINES)
@@ -49,3 +43,10 @@ class Star(ImageObject):
             glVertex(*self.vertices[0])
             glVertex(*self.vertices[i])
         glEnd()
+
+        if vertex_highlighting:
+            glColor(*ImageObject.VERTEX_COLOR)
+            glBegin(GL_POINTS)
+            for v in self.vertices:
+                glVertex(*v)
+            glEnd()

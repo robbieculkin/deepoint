@@ -100,41 +100,41 @@ def renderObjects(ObjectList, render_vertices):
 
 ''' Helper Functions '''
 #!!! Might have to change
-def screen_capture():
+def screen_capture(display_mode, screen_size):
     glReadBuffer(GL_BACK)
 
     # reading pixels from the rendered screen
-    if DISPLAY_MODE == 0:
-        pxLoLeft = glReadPixels(0, 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-        pxLoRight = glReadPixels(SCREEN_SIZE[0], 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-        pxHiLeft = glReadPixels(0, SCREEN_SIZE[1], SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-        pxHiRight = glReadPixels(SCREEN_SIZE[0], SCREEN_SIZE[1], SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
+    if display_mode == 0:
+        pxLoLeft = glReadPixels(0, 0, screen_size[0], screen_size[1], GL_RGB, GL_UNSIGNED_BYTE)
+        pxLoRight = glReadPixels(screen_size[0], 0, screen_size[0], screen_size[1], GL_RGB, GL_UNSIGNED_BYTE)
+        pxHiLeft = glReadPixels(0, screen_size[1], screen_size[0], screen_size[1], GL_RGB, GL_UNSIGNED_BYTE)
+        pxHiRight = glReadPixels(screen_size[0], screen_size[1], screen_size[0], screen_size[1], GL_RGB, GL_UNSIGNED_BYTE)
         pixels = [pxLoLeft, pxLoRight, pxHiLeft, pxHiRight]
         # saving pixels to an image
-        resultImage = Image.new("RGB", (SCREEN_SIZE[0]*2, SCREEN_SIZE[1]*2))
+        resultImage = Image.new("RGB", (screen_size[0]*2, screen_size[1]*2))
 
-        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[2])
+        image = Image.frombytes("RGB", screen_size, pixels[2])
         image = image.transpose( Image.FLIP_TOP_BOTTOM )
         resultImage.paste(image, None)
 
-        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[3])
+        image = Image.frombytes("RGB", screen_size, pixels[3])
         image = image.transpose( Image.FLIP_TOP_BOTTOM )
-        resultImage.paste(image, (SCREEN_SIZE[0], 0))
+        resultImage.paste(image, (screen_size[0], 0))
 
-        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[0])
+        image = Image.frombytes("RGB", screen_size, pixels[0])
         image = image.transpose( Image.FLIP_TOP_BOTTOM )
-        resultImage.paste(image, (0, SCREEN_SIZE[1]))
+        resultImage.paste(image, (0, screen_size[1]))
 
-        image = Image.frombytes("RGB", SCREEN_SIZE, pixels[1])
+        image = Image.frombytes("RGB", screen_size, pixels[1])
         image = image.transpose( Image.FLIP_TOP_BOTTOM )
-        resultImage.paste(image, (SCREEN_SIZE[0], SCREEN_SIZE[1]))
+        resultImage.paste(image, (screen_size[0], screen_size[1]))
         
         # resize the image
-        resizedImage = resultImage.resize(SCREEN_SIZE)
+        resizedImage = resultImage.resize(screen_size)
 
-    elif DISPLAY_MODE == 1:
-        pixels = glReadPixels(0, 0, SCREEN_SIZE[0], SCREEN_SIZE[1], GL_RGB, GL_UNSIGNED_BYTE)
-        image = Image.frombytes("RGB", SCREEN_SIZE, pixels)
+    elif display_mode == 1:
+        pixels = glReadPixels(0, 0, screen_size[0], screen_size[1], GL_RGB, GL_UNSIGNED_BYTE)
+        image = Image.frombytes("RGB", screen_size, pixels)
         image = image.transpose( Image.FLIP_TOP_BOTTOM )
         resizedImage = image
 
@@ -153,23 +153,28 @@ def highlight_vertices(output):
         for r in range(0, a.shape[0]):
             for c in range(0, a.shape[1]):
                 pixel = a[r, c]
-                if pixel[1] > pixel[0] and pixel[1] > pixel[2]:
-                    a[r, c, 0] = 0
-                    a[r, c, 2] = 0
-                    a[r, c, 1] = 254
+                if pixel[0] == pixel[1] and pixel[1] == pixel[2]:
+                    a[r,c] = 0, 0, 0
+                elif pixel[1] < pixel[0] and pixel[0] == pixel[2]:
+                    a[r,c] = 0, 0, 0
+                # arbitrary safe threshold based on experience
+                elif pixel[1] - pixel[0] < 20:
+                    a[r,c] = 0, 0, 0
+                else:
+                    a[r, c] = pixel[1], pixel[1], pixel[1]
 
         result.append(a)
 
     return result
 
 ''' Core Functions '''
-def resize(width, height):
+def resize(display_mode, width, height):
     """
     Re-calculate portions of the viewport such that rendering looks proper
     """
-    if DISPLAY_MODE == 0:
+    if display_mode == 0:
         glViewport(0, 0, width*2, height*2) #!!! Might Have to Change
-    elif DISPLAY_MODE == 1:
+    elif display_mode == 1:
         glViewport(0, 0, width, height) #!!! Might Have to Change
 
     glMatrixMode(GL_PROJECTION)
@@ -189,9 +194,9 @@ def init():
     glEnable(GL_LINE_SMOOTH)
     glClearColor(1.0, 1.0, 1.0, 0.0)
 
-    glPointSize(5.0)
+    glPointSize(4.0)
 
-def render(object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
+def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
     outputRenders = []
 
     if count < 1:
@@ -202,10 +207,10 @@ def render(object_types=[], count=1, object_count=1, frames_per_count=100, test=
     
     # render screen
     pygame.init()
-    screen = pygame.display.set_mode(SCREEN_SIZE, HWSURFACE|OPENGL|DOUBLEBUF)
+    screen = pygame.display.set_mode(screen_size, HWSURFACE|OPENGL|DOUBLEBUF)
 
     # initializing opengl 
-    resize(*SCREEN_SIZE)
+    resize(display_mode, screen_size[0], screen_size[1])
     init()
 
     # initializing render sim
@@ -232,7 +237,7 @@ def render(object_types=[], count=1, object_count=1, frames_per_count=100, test=
 
         if test == True:
             if pressed[K_SPACE]:
-                resizedImage = screen_capture()
+                resizedImage = screen_capture(display_mode=display_mode, screen_size=screen_size)
                 resizedImage.save("output.png")
 
         # frame management
@@ -272,12 +277,12 @@ def render(object_types=[], count=1, object_count=1, frames_per_count=100, test=
                                 ObjectList.append(OBJECT_DEFS[object](BaseColor))
             
             elif frame == frames_per_render:
-                output = screen_capture()
+                output = screen_capture(display_mode=display_mode, screen_size=screen_size)
                 outputRenders.append(output)
                 render_vertices = True
 
             elif frame == frames_per_count-1:
-                output = screen_capture()
+                output = screen_capture(display_mode=display_mode, screen_size=screen_size)
                 outputRenders.append(output)
                 total_generated += 1
 
@@ -294,3 +299,7 @@ def render(object_types=[], count=1, object_count=1, frames_per_count=100, test=
 
         if not test:
             frame = (frame + 1) % frames_per_count
+
+def generate_images(object_types=[], count=1, object_count=1):
+    # yield all the images that you want
+    pass

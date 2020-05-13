@@ -30,15 +30,15 @@ class Line(ImageObject):
         
         glLineWidth(self.width)
 
+        glColor(*self.color)
+        glBegin(GL_LINES)
+        for i in range(0, len(self.vertices)):
+            glVertex(*self.vertices[i])
+        glEnd()
+
         if vertex_highlighting:
             glColor(*ImageObject.VERTEX_COLOR)
             glBegin(GL_POINTS)
             for v in self.vertices:
                 glVertex(*v)
             glEnd()
-
-        glColor(*self.color)
-        glBegin(GL_LINES)
-        for i in range(0, len(self.vertices)):
-            glVertex(*self.vertices[i])
-        glEnd()
