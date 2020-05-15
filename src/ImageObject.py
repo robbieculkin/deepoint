@@ -26,7 +26,7 @@ class ImageObject(ABC):
     VERTEX_COLOR = (0, 1, 0)
     POS_WIDTH_LIMIT = 1
     POS_HEIGHT_LIMIT = 0.5
-    ROT_LIMIT = 175  # 360
+    ROT_LIMIT = 30  # 360
 
     def __init__(self, base_color):
         # color information

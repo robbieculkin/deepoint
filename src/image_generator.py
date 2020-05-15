@@ -140,7 +140,72 @@ def screen_capture(display_mode, screen_size):
 
     return resizedImage
 
+def __get_neighbors(a, r, c):
+    '''
+    Search for neighboring green pixels. Assuming that the green pixel 
+    cluster forms a circle, find the center of the circle to find the 
+    corner's true point.
+    '''
+    pixel = a[r, c]
+
+    center_coord = [r, c]
+    frontier = [(r, c)]
+    explored = []
+
+    # expand outwards until there are no green pixels
+    # depth first search to see what neighboring pixels may be potential
+    # corner candidates
+    while len(frontier) > 0:
+        current = frontier.pop()
+
+        if current in explored:
+            continue
+
+        if current[0] >= a.shape[0] or current[1] >= a.shape[1]:
+            continue
+
+        pixel = a[current[0], current[1]]
+        if pixel[1] != pixel[2]:
+            # get neighbors
+            explored.append(current)
+            frontier.append( (current[0]+1, current[1]+1) )
+            frontier.append( (current[0]+1, current[1]) )
+            frontier.append( (current[0]+1, current[1]-1) )
+            frontier.append( (current[0], current[1]-1) )
+            frontier.append( (current[0], current[1]+1) )
+            frontier.append( (current[0]-1, current[1]-1) )
+            frontier.append( (current[0]-1, current[1]) )
+            frontier.append( (current[0]-1, current[1]+1) )
+
+    maxheight = explored[0][0]
+    minheight = explored[0][0]
+    maxwidth = explored[0][1]
+    minwidth = explored[0][1]
+    # find the center
+    for elt in explored:
+        if elt[0] > maxheight:
+            maxheight = elt[0]
+        elif elt[0] < minheight:
+            minheight = elt[0]
+
+        if elt[1] > maxwidth:
+            maxwidth = elt[1]
+        elif elt[1] < minwidth:
+            minwidth = elt[1]
+
+    hdiff = (maxheight-minheight)//2
+    wdiff = (maxwidth-minwidth)//2
+
+    if hdiff > wdiff:
+        center_coord = [minheight + hdiff, minwidth + hdiff]
+    else:
+        center_coord = [minheight + wdiff, minwidth + wdiff]
+
+    return center_coord, explored
+
 def highlight_vertices(output):
+    # performance is generally slow, but hopefully should be fast enouch
+    # to not be the slowest link in data generation
     result = []
     for i in range(0, len(output)):
         out = output[i]
@@ -153,15 +218,19 @@ def highlight_vertices(output):
         for r in range(0, a.shape[0]):
             for c in range(0, a.shape[1]):
                 pixel = a[r, c]
-                if pixel[0] == pixel[1] and pixel[1] == pixel[2]:
-                    a[r,c] = 0, 0, 0
-                elif pixel[1] < pixel[0] and pixel[0] == pixel[2]:
-                    a[r,c] = 0, 0, 0
-                # arbitrary safe threshold based on experience
-                elif pixel[1] - pixel[0] < 20:
-                    a[r,c] = 0, 0, 0
-                else:
-                    a[r, c] = pixel[1], pixel[1], pixel[1]
+
+                if pixel[1] != pixel[2]:
+                    center_coord, explored = __get_neighbors(a, r, c)
+
+                    for elt in explored:
+                        if elt[0] != center_coord[0] or elt[1] != center_coord[1]:
+                            a[elt[0], elt[1]] = 0, 0, 0
+
+                    if center_coord[0] < a.shape[0] and center_coord[1] < a.shape[1]:
+                        a[center_coord[0], center_coord[1]] = 255, 255, 255
+
+                elif pixel[1] != 255:
+                    a[r, c] = 0, 0, 0
 
         result.append(a)
 
@@ -194,7 +263,7 @@ def init():
     glEnable(GL_LINE_SMOOTH)
     glClearColor(1.0, 1.0, 1.0, 0.0)
 
-    glPointSize(4.0)
+    glPointSize(5.0)
 
 def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
     outputRenders = []
