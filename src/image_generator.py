@@ -265,7 +265,7 @@ def init():
 
     glPointSize(5.0)
 
-def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
+def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
     outputRenders = []
 
     if count < 1:
@@ -368,6 +368,11 @@ def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, obj
 
         if not test:
             frame = (frame + 1) % frames_per_count
+
+def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
+    result = render_images(display_mode=display_mode, screen_size=screen_size, object_types=object_types, count=count, object_count=object_count, frames_per_count=frames_per_count, test=test)
+    pygame.quit()
+    return result
 
 def generate_images(object_types=[], count=1000, object_count=1):
     # yield all the images that you want
