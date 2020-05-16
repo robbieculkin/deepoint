@@ -6,12 +6,12 @@
 # Define something  that is independent of the object
 # that you are warping
 #
-# inputs to the network should be a 
+# inputs to the network should be a
 # 640 x 480 numy array
 #
-# should be a generator that keeps yielding new 
+# should be a generator that keeps yielding new
 # images
-# 
+#
 # *** just focus on generating one image ***
 # try doing on-the-fly generation
 #
@@ -47,9 +47,9 @@ from objects.Background import Background
 # SCREEN_SIZE = (640, 480)
 SCREEN_SIZE = (200, 200)
 TEXTURE_DIM = (128, 128)
-# if 0, treat it as if it were a mac display, where the screen buffer only reads one 
+# if 0, treat it as if it were a mac display, where the screen buffer only reads one
 # quarter of the information
-# if 1, treat it as if it were a bigger dislpay, where the screen can buffer the entire 
+# if 1, treat it as if it were a bigger dislpay, where the screen can buffer the entire
 # thing with the appropriate indexing
 DISPLAY_MODE = 0
 
@@ -128,7 +128,7 @@ def screen_capture(display_mode, screen_size):
         image = Image.frombytes("RGB", screen_size, pixels[1])
         image = image.transpose( Image.FLIP_TOP_BOTTOM )
         resultImage.paste(image, (screen_size[0], screen_size[1]))
-        
+
         # resize the image
         resizedImage = resultImage.resize(screen_size)
 
@@ -142,8 +142,8 @@ def screen_capture(display_mode, screen_size):
 
 def __get_neighbors(a, r, c):
     '''
-    Search for neighboring green pixels. Assuming that the green pixel 
-    cluster forms a circle, find the center of the circle to find the 
+    Search for neighboring green pixels. Assuming that the green pixel
+    cluster forms a circle, find the center of the circle to find the
     corner's true point.
     '''
     pixel = a[r, c]
@@ -214,7 +214,7 @@ def highlight_vertices(output):
         if i%2 == 0:
             result.append(a)
             continue
-        
+
         for r in range(0, a.shape[0]):
             for c in range(0, a.shape[1]):
                 pixel = a[r, c]
@@ -254,7 +254,7 @@ def resize(display_mode, width, height):
 
 def init():
     """
-    Initialize the OpenGL environment as well as any other components before 
+    Initialize the OpenGL environment as well as any other components before
     generating the image dataset.
     """
     glEnable(GL_DEPTH_TEST)
@@ -273,109 +273,112 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
 
     # render textures
     renderTextures()
-    
-    # render screen
-    pygame.init()
-    screen = pygame.display.set_mode(screen_size, HWSURFACE|OPENGL|DOUBLEBUF)
 
-    # initializing opengl 
-    resize(display_mode, screen_size[0], screen_size[1])
-    init()
+    try:
+        # render screen
+        pygame.init()
+        screen = pygame.display.set_mode(screen_size, HWSURFACE|OPENGL|DOUBLEBUF)
 
-    # initializing render sim
-    frame = 0
-    frames_per_count = frames_per_count
-    frames_per_render = int(frames_per_count/2)
-    total_generated = 0
-    render_vertices = False
+        # initializing opengl
+        resize(display_mode, screen_size[0], screen_size[1])
+        init()
 
-    # objects to render
-    BaseColor = round(random.random(), 2)
-    glClearColor(BaseColor, BaseColor, BaseColor, 0.0)
-    ObjectList = [Background(BaseColor), Triangle(BaseColor)]
+        # initializing render sim
+        frame = 0
+        frames_per_count = frames_per_count
+        frames_per_render = int(frames_per_count/2)
+        total_generated = 0
+        render_vertices = False
 
-    while True:
+        # objects to render
+        BaseColor = round(random.random(), 2)
+        glClearColor(BaseColor, BaseColor, BaseColor, 0.0)
+        ObjectList = [Background(BaseColor), Triangle(BaseColor)]
 
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                return outputRenders
-            if event.type == KEYUP and event.key == K_ESCAPE:
-                return outputRenders
-        
-        pressed = pygame.key.get_pressed()
+        while True:
 
-        if test == True:
-            if pressed[K_SPACE]:
-                resizedImage = screen_capture(display_mode=display_mode, screen_size=screen_size)
-                resizedImage.save("output.png")
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    return outputRenders
+                if event.type == KEYUP and event.key == K_ESCAPE:
+                    return outputRenders
 
-        # frame management
-        if test:
-            render_vertices = True
-        else:
-            if total_generated == count:
-                print('[INFO] rendering image {}/{}'.format(total_generated, count))
-                return outputRenders
+            pressed = pygame.key.get_pressed()
 
-            elif frame == 0:
-                if (total_generated%int(count/4)) == 0:
-                    print('[INFO] rendering image {}/{}'.format(total_generated, count))
-                # generate a new image
-                render_vertices = False
+            if test == True:
+                if pressed[K_SPACE]:
+                    resizedImage = screen_capture(display_mode=display_mode, screen_size=screen_size)
+                    resizedImage.save("output.png")
 
-                # generate new clear color
-                BaseColor = round(random.random(), 2)
-                glClearColor(BaseColor, BaseColor, BaseColor, 0.0)
-                # figure out what objects to render this time
-
-                # pick the objects to create
-                ObjectList = [Background(BaseColor)]
-                for object in object_types:
-                    # remove all other objects if n
-                    if object == 'none':
-                        if random.random() <= NONE_PROB:
-                            ObjectList = [Background(BaseColor)]
-                            break
-
-                    # for all other objects
-                    if object in OBJECT_DEFS.keys():
-                        num_objects = random.randint(1, object_count)
-                        for i in range(0, num_objects):
-                            obj = OBJECT_DEFS[object]
-                            if obj is not None:
-                                ObjectList.append(OBJECT_DEFS[object](BaseColor))
-            
-            elif frame == frames_per_render:
-                output = screen_capture(display_mode=display_mode, screen_size=screen_size)
-                outputRenders.append(output)
+            # frame management
+            if test:
                 render_vertices = True
+            else:
+                if total_generated == count:
+                    print('[INFO] rendering image {}/{}'.format(total_generated, count))
+                    return outputRenders
 
-            elif frame == frames_per_count-1:
-                output = screen_capture(display_mode=display_mode, screen_size=screen_size)
-                outputRenders.append(output)
-                total_generated += 1
+                elif frame == 0:
+                    if (total_generated%int(count/4)) == 0:
+                        print('[INFO] rendering image {}/{}'.format(total_generated, count))
+                    # generate a new image
+                    render_vertices = False
 
-        # clear the screen and the z-buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glLoadIdentity()
-        glTranslatef(0.0, 0.0, -1)
+                    # generate new clear color
+                    BaseColor = round(random.random(), 2)
+                    glClearColor(BaseColor, BaseColor, BaseColor, 0.0)
+                    # figure out what objects to render this time
 
-        # RENDER START
-        renderObjects(ObjectList, render_vertices)
-        # RENDER END
+                    # pick the objects to create
+                    ObjectList = [Background(BaseColor)]
+                    for object in object_types:
+                        # remove all other objects if n
+                        if object == 'none':
+                            if random.random() <= NONE_PROB:
+                                ObjectList = [Background(BaseColor)]
+                                break
 
-        pygame.display.flip()
+                        # for all other objects
+                        if object in OBJECT_DEFS.keys():
+                            num_objects = random.randint(1, object_count)
+                            for i in range(0, num_objects):
+                                obj = OBJECT_DEFS[object]
+                                if obj is not None:
+                                    ObjectList.append(OBJECT_DEFS[object](BaseColor))
 
-        if not test:
-            frame = (frame + 1) % frames_per_count
+                elif frame == frames_per_render:
+                    output = screen_capture(display_mode=display_mode, screen_size=screen_size)
+                    outputRenders.append(output)
+                    render_vertices = True
+
+                elif frame == frames_per_count-1:
+                    output = screen_capture(display_mode=display_mode, screen_size=screen_size)
+                    outputRenders.append(output)
+                    total_generated += 1
+
+            # clear the screen and the z-buffer
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            glLoadIdentity()
+            glTranslatef(0.0, 0.0, -1)
+
+            # RENDER START
+            renderObjects(ObjectList, render_vertices)
+            # RENDER END
+
+            pygame.display.flip()
+
+            if not test:
+                frame = (frame + 1) % frames_per_count
+    finally:
+        pygame.quit()
 
 def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
     result = render_images(display_mode=display_mode, screen_size=screen_size, object_types=object_types, count=count, object_count=object_count, frames_per_count=frames_per_count, test=test)
-    pygame.quit()
     return result
 
 def generate_images(object_types=[], count=1000, object_count=1):
     # yield all the images that you want
-    result = render(display_mode=0, screen_size=(200, 200), object_types=object_types, count=count, object_count=object_count, frames_per_count=5, test=False)
-    result = highlight_vertices(result)
-    yield result
+    for c in range(count):
+        result = render(display_mode=0, screen_size=(200, 200), object_types=object_types, count=1, object_count=object_count, frames_per_count=5, test=False)
+        result = highlight_vertices(result)
+        yield result
