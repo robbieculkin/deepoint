@@ -319,7 +319,8 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
                     return outputRenders
 
                 elif frame == 0:
-                    if (total_generated%int(count/4)) == 0:
+
+                    if (total_generated%(int(count/4)+1)) == 0: #+1 fixes mod by zero bug
                         print('[INFO] rendering image {}/{}'.format(total_generated, count))
                     # generate a new image
                     render_vertices = False
