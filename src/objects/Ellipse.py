@@ -1,4 +1,4 @@
-from ImageObject import ImageObject
+from src.ImageObject import ImageObject
 
 import math
 import random

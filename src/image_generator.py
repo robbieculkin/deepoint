@@ -32,17 +32,17 @@ from OpenGL.GLU import *
 from PIL import Image
 
 from scipy.ndimage import gaussian_filter
-from texture import salt_and_pepper, random_uniform, AdvancedTextures
+from src.texture import salt_and_pepper, random_uniform, AdvancedTextures
 from matplotlib import pyplot as plt
 
-from objects.Ellipse import Ellipse
-from objects.Checkerboard import Checkerboard
-from objects.Cube import Cube
-from objects.Quad import Quad
-from objects.Triangle import Triangle
-from objects.Line import Line
-from objects.Star import Star
-from objects.Background import Background
+from src.objects.Ellipse import Ellipse
+from src.objects.Checkerboard import Checkerboard
+from src.objects.Cube import Cube
+from src.objects.Quad import Quad
+from src.objects.Triangle import Triangle
+from src.objects.Line import Line
+from src.objects.Star import Star
+from src.objects.Background import Background
 
 # SCREEN_SIZE = (640, 480)
 SCREEN_SIZE = (200, 200)
@@ -206,13 +206,14 @@ def __get_neighbors(a, r, c):
 def highlight_vertices(output):
     # performance is generally slow, but hopefully should be fast enouch
     # to not be the slowest link in data generation
-    result = []
+    images = []
+    masks = []
     for i in range(0, len(output)):
         out = output[i]
         a = np.array(out)
 
         if i%2 == 0:
-            result.append(a)
+            images.append(a)
             continue
 
         for r in range(0, a.shape[0]):
@@ -232,9 +233,9 @@ def highlight_vertices(output):
                 elif pixel[1] != 255:
                     a[r, c] = 0, 0, 0
 
-        result.append(a)
+        masks.append(a)
 
-    return result
+    return images, masks
 
 ''' Core Functions '''
 def resize(display_mode, width, height):
@@ -377,9 +378,26 @@ def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, obj
     result = render_images(display_mode=display_mode, screen_size=screen_size, object_types=object_types, count=count, object_count=object_count, frames_per_count=frames_per_count, test=test)
     return result
 
-def generate_images(object_types=[], count=1000, object_count=1):
-    # yield all the images that you want
-    for c in range(count):
-        result = render(display_mode=0, screen_size=(200, 200), object_types=object_types, count=1, object_count=object_count, frames_per_count=5, test=False)
-        result = highlight_vertices(result)
-        yield result
+def generate_images(
+    object_types=[
+        'ellipse',
+        'checkerboard',
+        'cube',
+        'quad',
+        'star',
+        'line',
+        'triangle',
+        'none'], 
+    batch_size=1, 
+    object_count=1, 
+    display_mode=0,
+    shape = (200,200)):
+
+    while(1):
+        #generate
+        image = render(display_mode=display_mode, screen_size=shape, object_types=object_types, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
+        image, vertex_mask = highlight_vertices(image)
+        # only need one color channel bc grayscale
+        image = [i[:,:,0] for i in image]
+        vertex_mask = [m[:,:,0] for m in vertex_mask]
+        yield image, vertex_mask
