@@ -377,9 +377,22 @@ def render(display_mode=0, screen_size=(200, 200), object_types=[], count=1, obj
     result = render_images(display_mode=display_mode, screen_size=screen_size, object_types=object_types, count=count, object_count=object_count, frames_per_count=frames_per_count, test=test)
     return result
 
-def generate_images(object_types=[], count=1000, object_count=1):
-    # yield all the images that you want
-    for c in range(count):
-        result = render(display_mode=0, screen_size=(200, 200), object_types=object_types, count=1, object_count=object_count, frames_per_count=5, test=False)
-        result = highlight_vertices(result)
-        yield result
+def generate_images(
+    object_types=[
+        'ellipse',
+        'checkerboard',
+        'cube',
+        'quad',
+        'star',
+        'line',
+        'triangle'], 
+    batch_size=1, 
+    object_count=1, 
+    display_mode=0,
+    shape = (200,200)):
+
+    while(1):
+        object_type = [np.random.choice(object_types)]
+        image = render(display_mode=display_mode, screen_size=shape, object_types=object_type, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
+        image, vertex_mask = highlight_vertices(image)
+        yield image, vertex_mask
