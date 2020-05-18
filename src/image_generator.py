@@ -393,7 +393,12 @@ def generate_images(
     shape = (200,200)):
 
     while(1):
+        # pick an object type
         object_type = [np.random.choice(object_types)]
+        #generate
         image = render(display_mode=display_mode, screen_size=shape, object_types=object_type, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
         image, vertex_mask = highlight_vertices(image)
+        # only need one color channel bc grayscale
+        image = image[:,:,0]
+        vertex_mask = vertex_mask[:,:,0]
         yield image, vertex_mask
