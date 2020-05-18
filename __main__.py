@@ -1,7 +1,7 @@
 import cv2
 import time
 import argparse
-from image_generator import render, highlight_vertices
+from src.image_generator import render, highlight_vertices
 
 ''' Main Driver '''
 if __name__ == '__main__':

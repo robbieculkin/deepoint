@@ -32,17 +32,17 @@ from OpenGL.GLU import *
 from PIL import Image
 
 from scipy.ndimage import gaussian_filter
-from texture import salt_and_pepper, random_uniform, AdvancedTextures
+from src.texture import salt_and_pepper, random_uniform, AdvancedTextures
 from matplotlib import pyplot as plt
 
-from objects.Ellipse import Ellipse
-from objects.Checkerboard import Checkerboard
-from objects.Cube import Cube
-from objects.Quad import Quad
-from objects.Triangle import Triangle
-from objects.Line import Line
-from objects.Star import Star
-from objects.Background import Background
+from src.objects.Ellipse import Ellipse
+from src.objects.Checkerboard import Checkerboard
+from src.objects.Cube import Cube
+from src.objects.Quad import Quad
+from src.objects.Triangle import Triangle
+from src.objects.Line import Line
+from src.objects.Star import Star
+from src.objects.Background import Background
 
 # SCREEN_SIZE = (640, 480)
 SCREEN_SIZE = (200, 200)

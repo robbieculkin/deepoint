@@ -5,7 +5,7 @@
 #               be randomly varied.
 #
 
-from texture import salt_and_pepper, random_uniform, AdvancedTextures
+from src.texture import salt_and_pepper, random_uniform, AdvancedTextures
 
 import random
 import numpy as np
