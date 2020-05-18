@@ -57,13 +57,6 @@ class Checkerboard(ImageObject):
         """   
         self.transform_rot_pos()
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for vertex in self.vertices:
-                glVertex(*vertex)
-            glEnd()
-
         glColor(*self.color)
         glBegin(GL_QUADS)
         for square in self.squares:
@@ -72,22 +65,29 @@ class Checkerboard(ImageObject):
                 glVertex(*vertex)
         glEnd()
 
-        glColor(*self.color)
-        glBegin(GL_LINES)
-        for square in self.squares:
+        # glColor(*self.color)
+        # glBegin(GL_LINES)
+        # for square in self.squares:
             
-            v1, v2, v3, v4 = square.vertices
+        #     v1, v2, v3, v4 = square.vertices
 
-            glVertex(*v1)
-            glVertex(*v2)
+        #     glVertex(*v1)
+        #     glVertex(*v2)
 
-            glVertex(*v2)
-            glVertex(*v3)
+        #     glVertex(*v2)
+        #     glVertex(*v3)
 
-            glVertex(*v3)
-            glVertex(*v4)
+        #     glVertex(*v3)
+        #     glVertex(*v4)
 
-            glVertex(*v4)
-            glVertex(*v1)
+        #     glVertex(*v4)
+        #     glVertex(*v1)
 
-        glEnd()
+        # glEnd()
+
+        if vertex_highlighting:
+            glColor(*ImageObject.VERTEX_COLOR)
+            glBegin(GL_POINTS)
+            for vertex in self.vertices:
+                glVertex(*vertex)
+            glEnd()

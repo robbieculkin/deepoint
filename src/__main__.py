@@ -1,18 +1,23 @@
 import cv2
+import time
+import argparse
 from image_generator import render, highlight_vertices
 
 ''' Main Driver '''
 if __name__ == '__main__':
-
-    # Start Generating different settings of objects
-    # starting the main driver for generating the dataset
-    # wrap these two functions
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d','--displaymode', type=int, default=0, choices=[0,1])
+    args = parser.parse_args()
 
     # for showcase: frames_per_count = 50
     # for performance: frames_per_count = 5
-    output = render(object_types=['checkerboard'], count=10, object_count=1, frames_per_count=50, test=False)
+    start = time.time()
+    output = render(display_mode=args.displaymode, screen_size=(200, 200), object_types=['checkerboard'], count=10, object_count=1, frames_per_count=25, test=False)
     # makes green pixels brighter
     output = highlight_vertices(output) # output images
+    end = time.time()
+    diff = end - start
+    print("Time To Complete: {} seconds".format(diff))
 
     print()
     print(len(output))

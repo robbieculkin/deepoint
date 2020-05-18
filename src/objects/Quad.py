@@ -40,13 +40,6 @@ class Quad(ImageObject):
 
         self.transform_rot_pos()
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(*v)
-            glEnd()
-
         glColor(*self.color)
         glBegin(GL_QUADS)
         for i in range(0, len(self.vertices)):
@@ -54,3 +47,10 @@ class Quad(ImageObject):
                 glTexCoord(*self.tex_coords[i])
             glVertex(*self.vertices[i])
         glEnd()
+
+        if vertex_highlighting:
+            glColor(*ImageObject.VERTEX_COLOR)
+            glBegin(GL_POINTS)
+            for v in self.vertices:
+                glVertex(*v)
+            glEnd()

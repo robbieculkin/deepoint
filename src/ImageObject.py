@@ -23,11 +23,10 @@ class ImageObject(ABC):
     have randomly generated qualities on each construction OR when commanded. Keeps track 
     and highlights the verticies for corner detection.
     """
-    TEXTURE_DIM = (300, 300)
     VERTEX_COLOR = (0, 1, 0)
     POS_WIDTH_LIMIT = 1
     POS_HEIGHT_LIMIT = 0.5
-    ROT_LIMIT = 360
+    ROT_LIMIT = 30  # 360
 
     def __init__(self, base_color):
         # color information

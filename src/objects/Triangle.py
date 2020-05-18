@@ -37,12 +37,6 @@ class Triangle(ImageObject):
 
         self.transform_rot_pos()
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(*v)
-            glEnd()
 
         glColor(*self.color)
         glBegin(GL_TRIANGLES)
@@ -51,3 +45,10 @@ class Triangle(ImageObject):
                 glTexCoord(*self.tex_coords[i])
             glVertex(*self.vertices[i])
         glEnd()
+
+        if vertex_highlighting:
+            glColor(*ImageObject.VERTEX_COLOR)
+            glBegin(GL_POINTS)
+            for v in self.vertices:
+                glVertex(*v)
+            glEnd()
