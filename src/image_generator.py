@@ -206,13 +206,14 @@ def __get_neighbors(a, r, c):
 def highlight_vertices(output):
     # performance is generally slow, but hopefully should be fast enouch
     # to not be the slowest link in data generation
-    result = []
+    images = []
+    masks = []
     for i in range(0, len(output)):
         out = output[i]
         a = np.array(out)
 
         if i%2 == 0:
-            result.append(a)
+            images.append(a)
             continue
 
         for r in range(0, a.shape[0]):
@@ -232,9 +233,9 @@ def highlight_vertices(output):
                 elif pixel[1] != 255:
                     a[r, c] = 0, 0, 0
 
-        result.append(a)
+        masks.append(a)
 
-    return result
+    return images, masks
 
 ''' Core Functions '''
 def resize(display_mode, width, height):
@@ -393,12 +394,10 @@ def generate_images(
     shape = (200,200)):
 
     while(1):
-        # pick an object type
-        object_type = [np.random.choice(object_types)]
         #generate
-        image = render(display_mode=display_mode, screen_size=shape, object_types=object_type, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
+        image = render(display_mode=display_mode, screen_size=shape, object_types=object_types, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
         image, vertex_mask = highlight_vertices(image)
         # only need one color channel bc grayscale
-        image = image[:,:,0]
-        vertex_mask = vertex_mask[:,:,0]
+        image = [i[:,:,0] for i in image]
+        vertex_mask = [m[:,:,0] for m in vertex_mask]
         yield image, vertex_mask
