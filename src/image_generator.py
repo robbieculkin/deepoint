@@ -395,9 +395,11 @@ def generate_images(
 
     while(1):
         #generate
-        image = render(display_mode=display_mode, screen_size=shape, object_types=object_types, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
+        object_type = np.random.choice(object_types,object_count)
+        image = render(display_mode=display_mode, screen_size=shape, object_types=object_type, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
         image, vertex_mask = highlight_vertices(image)
-        # only need one color channel bc grayscale
-        image = [i[:,:,0] for i in image]
+        # only need one color channel bc mask
         vertex_mask = [m[:,:,0] for m in vertex_mask]
-        yield image, vertex_mask
+        # make mask one-hot
+        vertex_mask = [np.clip(m,0,1) for m in vertex_mask]
+        yield np.array(image), np.array(vertex_mask).reshape((batch_size,shape[0],shape[1],1))
