@@ -36,9 +36,4 @@ class Line(ImageObject):
             glVertex(*self.vertices[i])
         glEnd()
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(*v)
-            glEnd()
+        self.render_vertices(vertex_highlighting=vertex_highlighting)

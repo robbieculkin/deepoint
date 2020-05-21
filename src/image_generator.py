@@ -75,7 +75,8 @@ def renderTextures():
     img_wood = noise('wood')
     img_marble = noise('marble')
 
-    sigmas = [ random.randint(0, 2) for i in range(5) ]
+    # originally 0-2
+    sigmas = [ random.randint(0, 3) for i in range(5) ]
 
     # apply a gaussian blur
     img_random = gaussian_filter(img_random, sigma=sigmas[0])
@@ -220,18 +221,21 @@ def highlight_vertices(output):
             for c in range(0, a.shape[1]):
                 pixel = a[r, c]
 
-                if pixel[1] != pixel[2]:
-                    center_coord, explored = __get_neighbors(a, r, c)
-
-                    for elt in explored:
-                        if elt[0] != center_coord[0] or elt[1] != center_coord[1]:
-                            a[elt[0], elt[1]] = 0, 0, 0
-
-                    if center_coord[0] < a.shape[0] and center_coord[1] < a.shape[1]:
-                        a[center_coord[0], center_coord[1]] = 255, 255, 255
-
-                elif pixel[1] != 255:
+                if pixel[1] <= pixel[2] or pixel[1] <= pixel[0]:
                     a[r, c] = 0, 0, 0
+
+        for r in range(0, a.shape[0]):
+            for c in range(0, a.shape[1]):
+                pixel = a[r, c]
+
+                if pixel[1] > pixel[2] and pixel[1] > pixel[0]:
+                    center, explored = __get_neighbors(a, r, c)
+
+                    for e in explored:
+                        a[e[0], e[1]] = 0, 0, 0
+
+                    if (0 <= center[0] < a.shape[0]) and (0 <= center[1] < a.shape[1]):
+                        a[center[0], center[1]] = 255, 255, 255
 
         masks.append(a)
 
@@ -293,7 +297,6 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
 
         # objects to render
         BaseColor = round(random.random(), 2)
-        glClearColor(BaseColor, BaseColor, BaseColor, 0.0)
         ObjectList = [Background(BaseColor), Triangle(BaseColor)]
 
         while True:
@@ -328,11 +331,9 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
 
                     # generate new clear color
                     BaseColor = round(random.random(), 2)
-                    glClearColor(BaseColor, BaseColor, BaseColor, 0.0)
-                    # figure out what objects to render this time
 
                     # pick the objects to create
-                    ObjectList = [Background(BaseColor)]
+                    ObjectList = []
                     for object in object_types:
                         # remove all other objects if n
                         if object == 'none':
@@ -347,6 +348,9 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
                                 obj = OBJECT_DEFS[object]
                                 if obj is not None:
                                     ObjectList.append(OBJECT_DEFS[object](BaseColor))
+
+                    # add the background last so it gets rendered last
+                    ObjectList.append(Background(BaseColor))
 
                 elif frame == frames_per_render:
                     output = screen_capture(display_mode=display_mode, screen_size=screen_size)
