@@ -204,6 +204,20 @@ def __get_neighbors(a, r, c):
 
     return center_coord, explored
 
+def max_supress(a, r, c):
+
+    for row in range(-1, 2):
+        for col in range(-1, 2):
+            if row == 0 and col == 0:
+                continue
+
+            if 0 <= (r + row) < a.shape[0] and 0 <= (c + col) < a.shape[1]:
+                pixel = a[r + row, c + col]
+                if pixel[1] > pixel[2] or pixel[1] > pixel[0]:
+                    if pixel[1] > a[r, c][1]:
+                        a[r, c] = 0, 0, 0
+                        return
+
 def highlight_vertices(output):
     # performance is generally slow, but hopefully should be fast enouch
     # to not be the slowest link in data generation
@@ -268,7 +282,7 @@ def init():
     glEnable(GL_LINE_SMOOTH)
     glClearColor(1.0, 1.0, 1.0, 0.0)
 
-    glPointSize(5.0)
+    glPointSize(3.0)
 
 def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
     outputRenders = []

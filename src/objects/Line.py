@@ -15,7 +15,7 @@ class Line(ImageObject):
             [0.5, 0.0, 0.0]
         ]
 
-        self.width = random.randint(1, 300) 
+        self.width = random.randint(1, 100) 
         # tweak image shape
         self.vertices[0][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
         self.vertices[1][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
