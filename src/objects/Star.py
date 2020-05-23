@@ -19,7 +19,7 @@ class Star(ImageObject):
             [0.5, -0.5, 0.0] # right leg
         ]
 
-        self.width = random.randint(1, 300) 
+        self.width = random.randint(1, 100) 
         # tweak image shape
         for i in range(1, len(self.vertices)):
             v1 = (-1*random.randint(0, 1)) * random.uniform(0.0, 0.25)
@@ -44,9 +44,4 @@ class Star(ImageObject):
             glVertex(*self.vertices[i])
         glEnd()
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(*v)
-            glEnd()
+        self.render_vertices(vertex_highlighting=vertex_highlighting)
