@@ -52,5 +52,5 @@ class Quad(ImageObject):
             glColor(*ImageObject.VERTEX_COLOR)
             glBegin(GL_POINTS)
             for v in self.vertices:
-                glVertex(*v)
+                glVertex(v[0], v[1], v[2] + ImageObject.DEPTH_EPSILON)
             glEnd()

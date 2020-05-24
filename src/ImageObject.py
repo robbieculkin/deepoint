@@ -27,6 +27,7 @@ class ImageObject(ABC):
     POS_WIDTH_LIMIT = 1
     POS_HEIGHT_LIMIT = 0.5
     ROT_LIMIT = 30  # 360
+    DEPTH_EPSILON = 0.005
 
     def __init__(self, base_color):
         # color information
@@ -105,7 +106,17 @@ class ImageObject(ABC):
         glTranslatef(self.pos[0], self.pos[1], self.pos[2])
         glRotatef(self.rot[0], 1, 0, 0)
         glRotatef(self.rot[1], 0, 1, 0)
-        glRotatef(self.rot[2], 0, 0, 1)        
+        glRotatef(self.rot[2], 0, 0, 1)       
+
+    def render_vertices(self, vertex_highlighting):
+        if vertex_highlighting:
+            glDisable(GL_TEXTURE_2D)
+            glColor(*ImageObject.VERTEX_COLOR)
+            glBegin(GL_POINTS)
+            for v in self.vertices:
+                glVertex(v[0], v[1], v[2] + ImageObject.DEPTH_EPSILON)
+            glEnd()
+            glEnable(GL_TEXTURE_2D) 
 
     @abstractmethod
     def render(self, vertex_highlighting=False):
