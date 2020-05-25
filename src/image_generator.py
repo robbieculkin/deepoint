@@ -333,13 +333,13 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
                 render_vertices = True
             else:
                 if total_generated == count:
-                    print('[INFO] rendering image {}/{}'.format(total_generated, count))
+                    # print('[INFO] rendering image {}/{}'.format(total_generated, count))
                     return outputRenders
 
                 elif frame == 0:
 
-                    if (total_generated%(int(count/4)+1)) == 0: #+1 fixes mod by zero bug
-                        print('[INFO] rendering image {}/{}'.format(total_generated, count))
+                    # if (total_generated%(int(count/4)+1)) == 0: #+1 fixes mod by zero bug
+                    #     print('[INFO] rendering image {}/{}'.format(total_generated, count))
                     # generate a new image
                     render_vertices = False
 
@@ -409,15 +409,24 @@ def generate_images(
     batch_size=1, 
     object_count=1, 
     display_mode=0,
-    shape = (200,200)):
+    shape = (200,200),
+    single_channel=False,):
 
     while(1):
         #generate
         object_type = np.random.choice(object_types,object_count)
         image = render(display_mode=display_mode, screen_size=shape, object_types=object_type, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
         image, vertex_mask = highlight_vertices(image)
+        
         # only need one color channel bc mask
+        if single_channel:
+            image = np.array([m[:,:,0] for m in image]).reshape((batch_size,shape[0],shape[1],1))
+        else:
+            image = np.array(image)
+
         vertex_mask = [m[:,:,0] for m in vertex_mask]
-        # make mask one-hot
-        vertex_mask = [np.clip(m,0,1) for m in vertex_mask]
-        yield np.array(image), np.array(vertex_mask).reshape((batch_size,shape[0],shape[1],1))
+        # make mask one-hot, reshape
+        vertex_mask = np.array(
+            [np.clip(m,0,1) for m in vertex_mask]
+            ).reshape((batch_size,shape[0],shape[1],1))
+        yield image, vertex_mask
