@@ -19,7 +19,7 @@ class Star(ImageObject):
             [0.5, -0.5, 0.0] # right leg
         ]
 
-        self.width = random.randint(1, 100) 
+        self.width = random.randint(1, 5) 
         # tweak image shape
         for i in range(1, len(self.vertices)):
             v1 = (-1*random.randint(0, 1)) * random.uniform(0.0, 0.25)
