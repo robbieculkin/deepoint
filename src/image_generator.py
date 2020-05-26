@@ -96,24 +96,8 @@ def renderObjects(ObjectList, render_vertices):
 
     for object in ObjectList:
         glPushMatrix()
-
         object.render(render_vertices)
-
         glPopMatrix()
-
-# Convert 3d point to 2d
-def get2dpoint(point3d, view_mat, proj_mat, width, height):
-    """
-    param: point3d - point in 3d space
-    param: view_mat - view matrix
-    param: proj_mat - projection matrix
-    param: width - screen size
-    param: height - screen size 
-
-    output: 2d coordinates
-    """
-
-    return None
 
 ''' Helper Functions '''
 #!!! Might have to change

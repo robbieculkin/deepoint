@@ -28,7 +28,7 @@ class ImageObject(ABC):
     POS_WIDTH_LIMIT = 1
     POS_HEIGHT_LIMIT = 0.5
     ROT_LIMIT = 30  # 360
-    DEPTH_EPSILON = 0.0075
+    DEPTH_EPSILON = 0.0125
 
     def __init__(self, base_color, screen_size):
         self.screen_size = screen_size
