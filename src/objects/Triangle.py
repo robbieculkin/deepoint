@@ -8,8 +8,8 @@ from OpenGL.GL import *
 
 class Triangle(ImageObject):
 
-    def __init__(self, base_color):
-        ImageObject.__init__(self, base_color)
+    def __init__(self, base_color, screen_size):
+        ImageObject.__init__(self, base_color, screen_size)
         self.vertices = [
             [-0.5, 0.0, 0.0],
             [0.0, 0.5, 0.0],
@@ -36,7 +36,6 @@ class Triangle(ImageObject):
             glBindTexture(GL_TEXTURE_2D, self.texture_id)
 
         self.transform_rot_pos()
-
 
         glColor(*self.color)
         glBegin(GL_TRIANGLES)

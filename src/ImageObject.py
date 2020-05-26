@@ -13,6 +13,7 @@ import os
 
 from abc import ABC, abstractmethod
 from OpenGL.GL import *
+from OpenGL.GLU import *
 
 import pygame
 
@@ -27,9 +28,13 @@ class ImageObject(ABC):
     POS_WIDTH_LIMIT = 1
     POS_HEIGHT_LIMIT = 0.5
     ROT_LIMIT = 30  # 360
-    DEPTH_EPSILON = 0.005
+    DEPTH_EPSILON = 0.0075
 
-    def __init__(self, base_color):
+    def __init__(self, base_color, screen_size):
+        self.screen_size = screen_size
+        # highlighting vertices
+        self.vertex_pixels_calculated = False
+        self.pixels = []
         # color information
         self.base_color = base_color
         self.color = None
@@ -109,6 +114,18 @@ class ImageObject(ABC):
         glRotatef(self.rot[2], 0, 0, 1)       
 
     def render_vertices(self, vertex_highlighting):
+        # calculating the vertices in pixel coords given the 
+        # projection and view matrices
+        if not self.vertex_pixels_calculated:
+            
+            for vertex in self.vertices:
+                # got vertex
+                window_x, window_y, _ = gluProject(vertex[0], vertex[1], vertex[2])
+                point2d = [int(window_x), int(self.screen_size[1] - window_y)]
+                self.pixels.append(point2d)
+
+            self.vertex_pixels_calculated = True
+
         if vertex_highlighting:
             glDisable(GL_TEXTURE_2D)
             glColor(*ImageObject.VERTEX_COLOR)

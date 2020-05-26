@@ -8,8 +8,9 @@ from OpenGL.GL import *
 
 class Background(ImageObject):
 
-    def __init__(self, base_color):
-        ImageObject.__init__(self, base_color)
+    def __init__(self, base_color, screen_size):
+        ImageObject.__init__(self, base_color, screen_size)
+        self.vertex_pixels_calculated = True
         position = -10
         coord = 10
         self.vertices = [
