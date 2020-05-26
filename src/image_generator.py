@@ -162,9 +162,23 @@ def highlight_vertices(output, screen_size):
             
             current_pixel = mask[pixel[1], pixel[0]]
             if current_pixel[1] > current_pixel[0] and current_pixel[1] > current_pixel[2]:
-                mask_out[pixel[1], pixel[0]] = 255, 255, 255
+                mask[pixel[1], pixel[0]] = 255, 255, 255
+            else:
+                # see if there are any neighboring green pixels 
+                # for one off errors
+                hasGreenNeighbor = False
+                for row in (-1, 2):
+                    for col in (-1, 2):
+                        if row == 0 and col == 0:
+                            continue
+                        px = mask[current_pixel[1]+col, current_pixel[0]+row]
+                        if px[1] > px[0] and px[1] > px[2]:
+                            hasGreenNeighbor = True
 
-        masks.append(mask_out)
+                if hasGreenNeighbor == True:
+                    mask[pixel[1], pixel[0]] = 255, 255, 255
+
+        masks.append(mask)
 
     return images, masks
 
@@ -195,7 +209,7 @@ def init():
     glEnable(GL_LINE_SMOOTH)
     glClearColor(1.0, 1.0, 1.0, 0.0)
 
-    glPointSize(5.0)
+    glPointSize(10.0)
 
 def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
     outputRenders = []
