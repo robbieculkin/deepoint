@@ -21,8 +21,8 @@ class CheckerSquare(object):
 
 class Checkerboard(ImageObject):
 
-    def __init__(self, base_color):
-        ImageObject.__init__(self, base_color)
+    def __init__(self, base_color, screen_size):
+        ImageObject.__init__(self, base_color, screen_size)
 
         self.square_width = 0.25
         self.face_count = random.randint(2, 5)

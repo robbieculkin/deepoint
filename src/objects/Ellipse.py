@@ -9,8 +9,8 @@ from OpenGL.GL import *
 
 class Ellipse(ImageObject):
 
-    def __init__(self, base_color):
-        ImageObject.__init__(self, base_color)
+    def __init__(self, base_color, screen_size):
+        ImageObject.__init__(self, base_color, screen_size)
         self.a = 0.5
         self.b = 0.25
 

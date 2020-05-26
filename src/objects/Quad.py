@@ -8,8 +8,8 @@ from OpenGL.GL import *
 
 class Quad(ImageObject):
 
-    def __init__(self, base_color):
-        ImageObject.__init__(self, base_color)
+    def __init__(self, base_color, screen_size):
+        ImageObject.__init__(self, base_color, screen_size)
         self.vertices = [
             [-0.5, 0.5, 0.0],
             [0.5, 0.5, 0.0],
@@ -48,9 +48,4 @@ class Quad(ImageObject):
             glVertex(*self.vertices[i])
         glEnd()
 
-        if vertex_highlighting:
-            glColor(*ImageObject.VERTEX_COLOR)
-            glBegin(GL_POINTS)
-            for v in self.vertices:
-                glVertex(v[0], v[1], v[2] + ImageObject.DEPTH_EPSILON)
-            glEnd()
+        self.render_vertices(vertex_highlighting=vertex_highlighting)

@@ -96,8 +96,24 @@ def renderObjects(ObjectList, render_vertices):
 
     for object in ObjectList:
         glPushMatrix()
+
         object.render(render_vertices)
+
         glPopMatrix()
+
+# Convert 3d point to 2d
+def get2dpoint(point3d, view_mat, proj_mat, width, height):
+    """
+    param: point3d - point in 3d space
+    param: view_mat - view matrix
+    param: proj_mat - projection matrix
+    param: width - screen size
+    param: height - screen size 
+
+    output: 2d coordinates
+    """
+
+    return None
 
 ''' Helper Functions '''
 #!!! Might have to change
@@ -141,117 +157,30 @@ def screen_capture(display_mode, screen_size):
 
     return resizedImage
 
-def __get_neighbors(a, r, c):
-    '''
-    Search for neighboring green pixels. Assuming that the green pixel
-    cluster forms a circle, find the center of the circle to find the
-    corner's true point.
-    '''
-    pixel = a[r, c]
-
-    center_coord = [r, c]
-    frontier = [(r, c)]
-    explored = []
-
-    # expand outwards until there are no green pixels
-    # depth first search to see what neighboring pixels may be potential
-    # corner candidates
-    while len(frontier) > 0:
-        current = frontier.pop()
-
-        if current in explored:
-            continue
-
-        if current[0] >= a.shape[0] or current[1] >= a.shape[1]:
-            continue
-
-        pixel = a[current[0], current[1]]
-        if pixel[1] != pixel[2]:
-            # get neighbors
-            explored.append(current)
-            frontier.append( (current[0]+1, current[1]+1) )
-            frontier.append( (current[0]+1, current[1]) )
-            frontier.append( (current[0]+1, current[1]-1) )
-            frontier.append( (current[0], current[1]-1) )
-            frontier.append( (current[0], current[1]+1) )
-            frontier.append( (current[0]-1, current[1]-1) )
-            frontier.append( (current[0]-1, current[1]) )
-            frontier.append( (current[0]-1, current[1]+1) )
-
-    maxheight = explored[0][0]
-    minheight = explored[0][0]
-    maxwidth = explored[0][1]
-    minwidth = explored[0][1]
-    # find the center
-    for elt in explored:
-        if elt[0] > maxheight:
-            maxheight = elt[0]
-        elif elt[0] < minheight:
-            minheight = elt[0]
-
-        if elt[1] > maxwidth:
-            maxwidth = elt[1]
-        elif elt[1] < minwidth:
-            minwidth = elt[1]
-
-    hdiff = (maxheight-minheight)//2
-    wdiff = (maxwidth-minwidth)//2
-
-    if hdiff > wdiff:
-        center_coord = [minheight + hdiff, minwidth + hdiff]
-    else:
-        center_coord = [minheight + wdiff, minwidth + wdiff]
-
-    return center_coord, explored
-
-def max_supress(a, r, c):
-
-    for row in range(-1, 2):
-        for col in range(-1, 2):
-            if row == 0 and col == 0:
-                continue
-
-            if 0 <= (r + row) < a.shape[0] and 0 <= (c + col) < a.shape[1]:
-                pixel = a[r + row, c + col]
-                if pixel[1] > pixel[2] or pixel[1] > pixel[0]:
-                    if pixel[1] > a[r, c][1]:
-                        a[r, c] = 0, 0, 0
-                        return
-
-def highlight_vertices(output):
+def highlight_vertices(output, screen_size):
     # performance is generally slow, but hopefully should be fast enouch
     # to not be the slowest link in data generation
     images = []
     masks = []
     for i in range(0, len(output)):
-        out = output[i]
-        a = np.array(out)
+        img, mask, pixels = output[i]
+        img = np.array(img)
+        mask = np.array(mask)
+        mask_out = np.zeros(mask.shape)
+        
+        images.append(img)
 
-        if i%2 == 0:
-            images.append(a)
-            continue
+        for pixel in pixels:
+            if pixel[0] < 0 or pixel[0] > screen_size[0]-1:
+                continue
+            elif pixel[1] < 0 or pixel[1] > screen_size[1]-1:
+                continue
+            
+            current_pixel = mask[pixel[1], pixel[0]]
+            if current_pixel[1] > current_pixel[0] and current_pixel[1] > current_pixel[2]:
+                mask_out[pixel[1], pixel[0]] = 255, 255, 255
 
-        for r in range(0, a.shape[0]):
-            for c in range(0, a.shape[1]):
-                pixel = a[r, c]
-
-                if pixel[1] <= pixel[2] or pixel[1] <= pixel[0]:
-                    a[r, c] = 0, 0, 0
-
-        for r in range(0, a.shape[0]):
-            for c in range(0, a.shape[1]):
-                pixel = a[r, c]
-
-                if pixel[1] > pixel[2] and pixel[1] > pixel[0]:
-                    center, explored = __get_neighbors(a, r, c)
-
-                    for e in explored:
-                        a[e[0], e[1]] = 0, 0, 0
-
-                    if (0 <= center[0] < a.shape[0]) and (0 <= center[1] < a.shape[1]):
-                        a[center[0], center[1]] = 255, 255, 255
-
-        masks.append(a)
+        masks.append(mask_out)
 
     return images, masks
 
@@ -282,7 +211,7 @@ def init():
     glEnable(GL_LINE_SMOOTH)
     glClearColor(1.0, 1.0, 1.0, 0.0)
 
-    glPointSize(3.0)
+    glPointSize(5.0)
 
 def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count=1, object_count=1, frames_per_count=100, test=False):
     outputRenders = []
@@ -311,7 +240,7 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
 
         # objects to render
         BaseColor = round(random.random(), 2)
-        ObjectList = [Background(BaseColor), Triangle(BaseColor)]
+        ObjectList = [Background(BaseColor, screen_size), Triangle(BaseColor, screen_size)]
 
         while True:
 
@@ -352,7 +281,7 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
                         # remove all other objects if n
                         if object == 'none':
                             if random.random() <= NONE_PROB:
-                                ObjectList = [Background(BaseColor)]
+                                ObjectList = [Background(BaseColor, screen_size)]
                                 break
 
                         # for all other objects
@@ -361,19 +290,25 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
                             for i in range(0, num_objects):
                                 obj = OBJECT_DEFS[object]
                                 if obj is not None:
-                                    ObjectList.append(OBJECT_DEFS[object](BaseColor))
+                                    ObjectList.append(OBJECT_DEFS[object](BaseColor, screen_size))
 
                     # add the background last so it gets rendered last
-                    ObjectList.append(Background(BaseColor))
+                    ObjectList.append(Background(BaseColor, screen_size))
 
                 elif frame == frames_per_render:
                     output = screen_capture(display_mode=display_mode, screen_size=screen_size)
-                    outputRenders.append(output)
+                    outputRenders.append([output])
                     render_vertices = True
 
                 elif frame == frames_per_count-1:
                     output = screen_capture(display_mode=display_mode, screen_size=screen_size)
-                    outputRenders.append(output)
+
+                    pixels = []
+                    for obj in ObjectList:
+                        pixels.extend(obj.pixels)
+
+                    outputRenders[-1].append(output)
+                    outputRenders[-1].append(pixels)
                     total_generated += 1
 
             # clear the screen and the z-buffer
@@ -414,7 +349,7 @@ def generate_images(
     while(1):
         #generate
         image = render(display_mode=display_mode, screen_size=shape, object_types=object_types, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
-        image, vertex_mask = highlight_vertices(image)
+        image, vertex_mask = highlight_vertices(image, shape)
         # only need one color channel bc grayscale
         image = [i[:,:,0] for i in image]
         vertex_mask = [m[:,:,0] for m in vertex_mask]

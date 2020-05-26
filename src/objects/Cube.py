@@ -8,8 +8,8 @@ from OpenGL.GL import *
 
 class Cube(ImageObject):
 
-    def __init__(self, base_color):
-        ImageObject.__init__(self, base_color)
+    def __init__(self, base_color, screen_size):
+        ImageObject.__init__(self, base_color, screen_size)
         self.vertices = [
             [0.0, 0.0, 0.25],
             [0.25, 0.0, 0.25],
