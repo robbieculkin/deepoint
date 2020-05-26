@@ -171,9 +171,11 @@ def highlight_vertices(output, screen_size):
                     for col in (-1, 2):
                         if row == 0 and col == 0:
                             continue
-                        px = mask[current_pixel[1]+col, current_pixel[0]+row]
-                        if px[1] > px[0] and px[1] > px[2]:
-                            hasGreenNeighbor = True
+
+                        if (0 <= current_pixel[1]+col < screen_size[1] ) and (0 <= current_pixel[0]+row < screen_size[0] ):
+                            px = mask[current_pixel[1]+col, current_pixel[0]+row]
+                            if px[1] > px[0] and px[1] > px[2]:
+                                hasGreenNeighbor = True
 
                 if hasGreenNeighbor == True:
                     mask_out[pixel[1], pixel[0]] = 255, 255, 255
