@@ -162,7 +162,7 @@ def highlight_vertices(output, screen_size):
             
             current_pixel = mask[pixel[1], pixel[0]]
             if current_pixel[1] > current_pixel[0] and current_pixel[1] > current_pixel[2]:
-                mask[pixel[1], pixel[0]] = 255, 255, 255
+                mask_out[pixel[1], pixel[0]] = 255, 255, 255
             else:
                 # see if there are any neighboring green pixels 
                 # for one off errors
@@ -176,9 +176,9 @@ def highlight_vertices(output, screen_size):
                             hasGreenNeighbor = True
 
                 if hasGreenNeighbor == True:
-                    mask[pixel[1], pixel[0]] = 255, 255, 255
+                    mask_out[pixel[1], pixel[0]] = 255, 255, 255
 
-        masks.append(mask)
+        masks.append(mask_out)
 
     return images, masks
 
