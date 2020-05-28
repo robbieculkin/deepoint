@@ -11,10 +11,10 @@ class Quad(ImageObject):
     def __init__(self, base_color, screen_size):
         ImageObject.__init__(self, base_color, screen_size)
         self.vertices = [
-            [-0.5, 0.5, 0.0],
-            [0.5, 0.5, 0.0],
-            [0.5, -0.5, 0.0],
-            [-0.5, -0.5, 0.0]
+            [-0.2, 0.2, 0.0],
+            [0.2, 0.2, 0.0],
+            [0.2, -0.2, 0.0],
+            [-0.2, -0.2, 0.0]
         ]
         self.tex_coords = [
             (0.0, 0.0),
@@ -24,10 +24,10 @@ class Quad(ImageObject):
         ]
 
         # tweak image shape
-        self.vertices[0][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
-        self.vertices[1][1] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
-        self.vertices[2][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
-        self.vertices[3][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.45)
+        self.vertices[0][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.15)
+        self.vertices[1][1] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.15)
+        self.vertices[2][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.15)
+        self.vertices[3][0] += (-1*random.randint(0, 1)) * random.uniform(0.0, 0.15)
 
     def render(self, vertex_highlighting=False):
         """

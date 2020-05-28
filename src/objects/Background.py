@@ -29,7 +29,7 @@ class Background(ImageObject):
             (0, 0, 1.0)
         ]
 
-        # apply a blur to the texture image
+        self.color = (0.5, 0.5, 0.5)
 
     def render(self, vertex_highlighting=False):
         """

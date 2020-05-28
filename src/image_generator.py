@@ -286,7 +286,8 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
 
                         # for all other objects
                         if object in OBJECT_DEFS.keys():
-                            num_objects = random.randint(1, object_count)
+                            # num_objects = random.randint(1, object_count)
+                            num_objects = object_count
                             for i in range(0, num_objects):
                                 obj = OBJECT_DEFS[object]
                                 if obj is not None:
@@ -344,13 +345,33 @@ def generate_images(
     batch_size=1, 
     object_count=1, 
     display_mode=0,
-    shape = (200,200)):
+    shape = (200,200),
+    single_channel=False,):
 
     while(1):
         #generate
         image = render(display_mode=display_mode, screen_size=shape, object_types=object_types, count=batch_size, object_count=object_count, frames_per_count=5, test=False)
         image, vertex_mask = highlight_vertices(image, shape)
-        # only need one color channel bc grayscale
-        image = [i[:,:,0] for i in image]
+        
+        # Prepare the Image Chanel
+        # only need one color channel bc mask
+        if single_channel:
+            image = np.array([m[:,:,0] for m in image]).reshape((batch_size,shape[0],shape[1],1))
+        else:
+            image = np.array(image)
+
+        # normalize the matrix
+        image = image.astype("float") / 255.0
+
+        # Prepare the Vertex Mask
         vertex_mask = [m[:,:,0] for m in vertex_mask]
+        # make mask one-hot, reshape
+        vertex_mask = np.array(
+            [np.clip(m,0,1) for m in vertex_mask]
+            ).reshape((batch_size,shape[0],shape[1],1))
+
+        # zero the mean
+        for i in range(0, len(image)):
+            image[i] = image[i].astype("float") - image[i].mean()
+
         yield image, vertex_mask
