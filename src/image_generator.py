@@ -76,7 +76,7 @@ def renderTextures():
     img_marble = noise('marble')
 
     # originally 0-2
-    sigmas = [ random.randint(0, 3) for i in range(5) ]
+    sigmas = [ random.randint(2, 5) for i in range(5) ]
 
     # apply a gaussian blur
     img_random = gaussian_filter(img_random, sigma=sigmas[0])
@@ -286,8 +286,8 @@ def render_images(display_mode=0, screen_size=(200, 200), object_types=[], count
 
                         # for all other objects
                         if object in OBJECT_DEFS.keys():
-                            # num_objects = random.randint(1, object_count)
-                            num_objects = object_count
+                            num_objects = random.randint(1, object_count)
+                            # num_objects = object_count
                             for i in range(0, num_objects):
                                 obj = OBJECT_DEFS[object]
                                 if obj is not None:
