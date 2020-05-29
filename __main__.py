@@ -59,7 +59,7 @@ if __name__ == '__main__':
         line_data_generator,
         star_data_generator,
         ellipse_data_generator,
-        # cube_data_generator
+        cube_data_generator
     ]
 
     model = None
@@ -141,12 +141,12 @@ if __name__ == '__main__':
     print('*** START TESTING ***')
     test_data_generator = generate_images(object_types=[
             # 'ellipse',
-            # 'checkerboard',
+            'checkerboard',
             # 'cube',
             # 'quad',
             # 'star',
             # 'line',
-            'triangle',
+            # 'triangle',
             # 'none'
         ],
         batch_size=10, 
