@@ -3,6 +3,7 @@ import time
 import os
 import argparse
 from src.image_generator import render, highlight_vertices, generate_images
+from src.postprocess import non_mamima_suppression
 
 import keras
 from keras.optimizers import Adam, SGD
@@ -158,6 +159,11 @@ if __name__ == '__main__':
     x_test, y_test = next(test_data_generator)
 
     y_test_hat = model.predict(x_test)
+
+    #non-maxima suppression
+    window = 10
+    thresh = 0.15
+    y_test_hat = np.array([non_mamima_suppression(yh, window, thresh) for yh in y_test_hat])
 
     for x,y,y_hat in zip(x_test,y_test,y_test_hat):
 
