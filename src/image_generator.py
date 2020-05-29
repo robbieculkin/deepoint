@@ -429,4 +429,4 @@ def generate_images(
         vertex_mask = np.array(
             [np.clip(m,0,1) for m in vertex_mask]
             ).reshape((batch_size,shape[0],shape[1],1))
-        yield image, vertex_mask
+        yield image-image.mean(), vertex_mask
