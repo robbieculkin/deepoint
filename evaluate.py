@@ -15,6 +15,7 @@ import tensorflow as tf
 import keras
 from tensorflow.keras.models import load_model
 from src.postprocess import non_mamima_suppression
+from sklearn import  metrics
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -113,8 +114,8 @@ if __name__ == '__main__':
     orb_dataset_x = np.array([ cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) for img_path in dataset_x ])
     
     for i in range(0, total_tests):
-        if i > 4:
-            break
+        # if i > 10:
+        #     break
 
         # compute orb keypoints
         kp = orb_model.detect(orb_dataset_x[i], None)
@@ -128,44 +129,88 @@ if __name__ == '__main__':
                 if dataset_y[i][row][col] > 0:
                     actual_points += 1
 
-        print('Actual Points: {}'.format(actual_points))
+        # print('Actual Points: {}'.format(actual_points))
+
+        # PRECISION RECALL CURVE
+        step_size = 0.1
+        precision_recall_x  = np.arange(0, 1.0 + step_size, step_size)
+        mp_ap_list = []
+        orb_ap_list = []
 
         # magic point
-        mp_total_px = 0
-        mp_correct_px = 0
+        mp_precision_recall_y = np.zeros(len(precision_recall_x))
 
-        image = mp_yhat[i].reshape(screen_size[1], screen_size[0], 1)
-        for row in range(0, image.shape[0]):
-            for col in range(0, image.shape[1]):
+        for i_conf in range(1, len(precision_recall_x)):
+            mp_tp = 0
+            mp_fp = 0
+            
+            image = mp_yhat[i].reshape(screen_size[1], screen_size[0], 1)
+            for row in range(0, image.shape[0]):
+                for col in range(0, image.shape[1]):
 
-                # filter for response
-                if image[row][col] > 0:
-                    mp_total_px += 1
+                    # filter for response
+                    if image[row][col] > 0 and (precision_recall_x[i_conf-1] < image[row][col] <= precision_recall_x[i_conf]):
+                        if correct((row, col), dataset_y[i]) == True:
+                            mp_tp += 1
+                        else:
+                            mp_fp += 1
 
-                    if correct((row, col), dataset_y[i]) == True:
-                        mp_correct_px += 1
+            if mp_tp + mp_fp > 0: 
+                mp_precision_recall_y[i_conf] = mp_tp / (mp_tp + mp_fp)
+            else:
+                mp_precision_recall_y[i_conf] = 0
 
-        print('Magic Point: {}/{}'.format(mp_correct_px, mp_total_px))
+        mp_ap = mp_precision_recall_y.sum()
+        # print(mp_precision_recall_y)
+        # print('Magic Point: {}'.format(mp_ap))
+        mp_ap_list.append(mp_ap)
+
 
         # orb detector
-        orb_total_px = len(kp)
-        orb_correct_px = 0
+        orb_precision_rexall_y = np.zeros(len(precision_recall_x))
 
-        for point in kp:
-            
-            if correct((int(point.pt[1]), int(point.pt[0])), dataset_y[i]) == True:
-                orb_correct_px += 1
+        for i_conf in range(1, len(precision_recall_x)):
+            orb_tp = 0
+            orb_fp = 0
 
-        print('ORB: {}/{}'.format(orb_correct_px, orb_total_px))
+            for point in kp:
+                
+                if correct((int(point.pt[1]), int(point.pt[0])), dataset_y[i]) == True and (precision_recall_x[i_conf-1] < point.response <= precision_recall_x[i_conf]):
+                    orb_tp += 1
+                else:
+                    orb_fp += 1
+
+            if orb_tp + orb_fp > 0: 
+                orb_precision_rexall_y[i_conf] = orb_tp / (orb_tp + orb_fp)
+            else:
+                orb_precision_rexall_y[i_conf] = 0
+
+        orb_ap = orb_precision_rexall_y.sum()
+        # print(orb_precision_rexall_y)
+        # print('ORB Detector: {}'.format(orb_ap))
+        orb_ap_list.append(orb_ap)
 
         # plot the two results
-        _, ax = plt.subplots(nrows=1, ncols=4,figsize=(15,10))
-        plt.title("{}".format(dataset_x[i]))
-        ax[0].imshow(mp_dataset_x[i].reshape(screen_size[1],screen_size[0]), cmap='gray')
-        ax[1].imshow(dataset_y[i], cmap='gray')
-        ax[2].imshow(mp_dataset_x[i].reshape(screen_size[1],screen_size[0]), cmap='gray')
-        ax[2].imshow(mp_yhat[i].reshape(screen_size[1], screen_size[0]), cmap='jet', alpha=0.5)
-        ax[3].imshow(orb_result)
-        plt.show()
+        # f, ax = plt.subplots(nrows=1, ncols=4,figsize=(15,10))
+        # ax[0].imshow(mp_dataset_x[i].reshape(screen_size[1],screen_size[0]), cmap='gray')
+        # ax[1].imshow(dataset_y[i], cmap='gray')
+        # ax[2].imshow(mp_dataset_x[i].reshape(screen_size[1],screen_size[0]), cmap='gray')
+        # ax[2].imshow(mp_yhat[i].reshape(screen_size[1], screen_size[0]), cmap='jet', alpha=0.5)
+        # ax[3].imshow(orb_result)
+        # plt.show()
 
     # plot all of the actual results
+    mp_ap_mean = np.array(mp_ap_list).mean()
+    orb_ap_mean = np.array(orb_ap_list).mean()
+
+    print(mp_ap_mean)
+    print(orb_ap_mean)
+    plt.style.use("ggplot")
+    plt.figure()
+    bar_list = plt.bar(('Magic Point Network', 'ORB Feature Detector'), [mp_ap_mean, orb_ap_mean])
+    bar_list[0].set_color('gray')
+    bar_list[1].set_color('gray')
+    plt.ylabel('Average Precision Mean')
+    plt.yticks(precision_recall_x)
+    plt.title('Mean of the Average Precision over the Synthetic Shapes Dataset')
+    plt.show()
