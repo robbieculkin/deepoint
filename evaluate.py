@@ -14,6 +14,7 @@ import glob
 import tensorflow as tf
 import keras
 from tensorflow.keras.models import load_model
+from src.postprocess import non_mamima_suppression
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -90,24 +91,44 @@ if __name__ == '__main__':
 
     dataset_x = [file for file in glob.glob(path_to_datax + "*.png", recursive=False)]
     dataset_y = [file for file in glob.glob(path_to_datay + "*.png", recursive=False)]
+    total_tests = len(dataset_x)
 
-    dataset_x = np.array([ plt.imread(i) for i in dataset_x ])
-    dataset_y = np.array([ plt.imread(i) for i in dataset_y ])
+    # actual results
+    dataset_y = np.array([ cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) for img_path in dataset_y ])
 
-    mp_dataset = dataset_x.copy()
-    mp_dataset = np.array([m[:,:,0] for m in mp_dataset]).reshape((80,160,120,1))
-    mp_dataset = mp_dataset.astype("float") / 255.0
-    for i in range(0, len(mp_dataset)):
-        mp_dataset[i] = mp_dataset[i].astype("float") - mp_dataset[i].mean()
+    # using magic point
+    mp_dataset_x = [ cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) for img_path in dataset_x ]
+    mp_dataset_x = np.array( [ i.reshape(screen_size[0], screen_size[1], 1) for i in mp_dataset_x ] )
 
-    y_test_hat = mp_model.predict(mp_dataset)
- 
-    for i in range(0, len(dataset_x)):
+    mp_dataset_x = mp_dataset_x.astype("float") / 255.0
+    for i in range(0, len(mp_dataset_x)):
+        mp_dataset_x[i] = mp_dataset_x[i].astype("float") - mp_dataset_x[i].mean()
 
-        if i > 5:
+    mp_yhat = mp_model.predict(mp_dataset_x)
+    window = 10
+    thresh = 0.15
+    mp_yhat = np.array([non_mamima_suppression(yh, window, thresh) for yh in mp_yhat])
+
+    # using orb
+    orb_dataset_x = np.array([ cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) for img_path in dataset_x ])
+    
+    for i in range(0, total_tests):
+        if i > 20:
             break
 
+        # compute orb keypoints
+        kp = orb_model.detect(orb_dataset_x[i], None)
+        # draw keypoints
+        orb_result = cv2.drawKeypoints(orb_dataset_x[i], kp, None, color=(0, 255, 0), flags=0)
+
+        # compare the two results
+
+        # plot the two results
         _, ax = plt.subplots(nrows=1, ncols=4,figsize=(15,10))
-        ax[0].imshow(dataset_x[i])
-        ax[1].imshow(y_test_hat[i].reshape(120,160))
+        plt.title("{}".format(dataset_x[i]))
+        ax[0].imshow(mp_dataset_x[i].reshape(screen_size[1],screen_size[0]), cmap='gray')
+        ax[1].imshow(dataset_y[i], cmap='gray')
+        ax[2].imshow(mp_dataset_x[i].reshape(screen_size[1],screen_size[0]), cmap='gray')
+        ax[2].imshow(mp_yhat[i].reshape(screen_size[1], screen_size[0]), cmap='jet', alpha=0.5)
+        ax[3].imshow(orb_result)
         plt.show()
