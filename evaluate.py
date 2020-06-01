@@ -27,15 +27,20 @@ def error(msg):
     exit()
 
 ''' Evaluation Measures '''
-def corr(pixel, truth_image, epsilon=4):
+def correct(pixel, truth_image, epsilon=4):
     """
     Determine if the current pixel is a correct corner 
 
     @param: pixel ( (x_coord, y_coord) ): x and y coordinates of the pixel
     @param: truth_image (np.array): image with the result of what actually is a corner or not
-    @param: epsilon (int): threshold for corner-ness
+    @param: epsilon (int): neighborhood threshold for corner-ness
     """
-    pass
+
+    x_min, y_min = np.array(pixel) - epsilon
+    x_max, y_max = np.array(pixel) + epsilon
+    eps_window = truth_image[x_min:x_max, y_min:y_max]
+
+    return eps_window.sum() > 0
 
 def average_precision():
     pass
