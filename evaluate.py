@@ -18,12 +18,34 @@ from tensorflow.keras.models import load_model
 import numpy as np
 import matplotlib.pyplot as plt
 
+''' Messaging Components '''
 def info(msg):
     print('[INFO]: {}'.format(msg))
 
 def error(msg):
     print('[ERROR]: {}'.format(msg))
     exit()
+
+''' Evaluation Measures '''
+def corr(pixel, truth_image, epsilon=4):
+    """
+    Determine if the current pixel is a correct corner 
+
+    @param: pixel ( (x_coord, y_coord) ): x and y coordinates of the pixel
+    @param: truth_image (np.array): image with the result of what actually is a corner or not
+    @param: epsilon (int): threshold for corner-ness
+    """
+    pass
+
+def average_precision():
+    pass
+
+def localization_error():
+    pass
+
+def repeatability():
+    pass
+
 
 ''' Main Driver '''
 if __name__ == '__main__':
@@ -56,38 +78,31 @@ if __name__ == '__main__':
     ####################
     # Load the Dataset #
     ####################
-    path_to_data = os.path.join(os.path.dirname(__file__), args['data'])
-    if not os.path.isdir(path_to_data):
-        error('unable to find data path')
+    path_to_datax = os.path.join(os.path.dirname(__file__), args['data'], 'images/')
+    path_to_datay = os.path.join(os.path.dirname(__file__), args['data'], 'masks/')
+    if not os.path.isdir(path_to_datax) or not os.path.isdir(path_to_datay):
+        error('unable to find data paths')
 
-    dataset = [file for file in glob.glob(path_to_data + "*.png", recursive=False)]
+    dataset_x = [file for file in glob.glob(path_to_datax + "*.png", recursive=False)]
+    dataset_y = [file for file in glob.glob(path_to_datay + "*.png", recursive=False)]
 
-    dataset = [ cv2.imread(i, cv2.IMREAD_GRAYSCALE) for i in dataset ]
-    dataset = [ cv2.resize(i, screen_size, interpolation=cv2.INTER_CUBIC) for i in dataset ]
+    dataset_x = np.array([ plt.imread(i) for i in dataset_x ])
+    dataset_y = np.array([ plt.imread(i) for i in dataset_y ])
 
-    # # normalize the data
-    # # dataset = [ i.astype("float")/255.0 for i in dataset ]
-    # # dataset = [ i.astype("float")-i.mean() for i in dataset ]
+    mp_dataset = dataset_x.copy()
+    mp_dataset = np.array([m[:,:,0] for m in mp_dataset]).reshape((80,160,120,1))
+    mp_dataset = mp_dataset.astype("float") / 255.0
+    for i in range(0, len(mp_dataset)):
+        mp_dataset[i] = mp_dataset[i].astype("float") - mp_dataset[i].mean()
 
-    ###################
-    # Show The Images # 
-    ###################
-    print('{} Images To Compare'.format(len(dataset)))
-    for image in dataset:
-        # use magic point
-        
-        # use orb
-        kp = orb_model.detect(image)
-        # compute descriptors
-        kp, des = orb_model.compute(image, kp)
-        # draw the keypoints
-        orbImage = cv2.drawKeypoints(image,kp,np.array([]), color=(0,255,0), flags=0)
+    y_test_hat = mp_model.predict(mp_dataset)
+ 
+    for i in range(0, len(dataset_x)):
 
-        # compare
+        if i > 5:
+            break
 
-        # display
-        plt.imshow(orbImage)
-        plt.title("ORB Detector")
+        _, ax = plt.subplots(nrows=1, ncols=4,figsize=(15,10))
+        ax[0].imshow(dataset_x[i])
+        ax[1].imshow(y_test_hat[i].reshape(120,160))
         plt.show()
-
-
