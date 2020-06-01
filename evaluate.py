@@ -113,7 +113,7 @@ if __name__ == '__main__':
     orb_dataset_x = np.array([ cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) for img_path in dataset_x ])
     
     for i in range(0, total_tests):
-        if i > 20:
+        if i > 4:
             break
 
         # compute orb keypoints
@@ -121,7 +121,42 @@ if __name__ == '__main__':
         # draw keypoints
         orb_result = cv2.drawKeypoints(orb_dataset_x[i], kp, None, color=(0, 255, 0), flags=0)
 
-        # compare the two results
+        # compute AP of points
+        actual_points = 0
+        for row in range(0, len(dataset_y[i])):
+            for col in range(0, len(dataset_y[i][0])):
+                if dataset_y[i][row][col] > 0:
+                    actual_points += 1
+
+        print('Actual Points: {}'.format(actual_points))
+
+        # magic point
+        mp_total_px = 0
+        mp_correct_px = 0
+
+        image = mp_yhat[i].reshape(screen_size[1], screen_size[0], 1)
+        for row in range(0, image.shape[0]):
+            for col in range(0, image.shape[1]):
+
+                # filter for response
+                if image[row][col] > 0:
+                    mp_total_px += 1
+
+                    if correct((row, col), dataset_y[i]) == True:
+                        mp_correct_px += 1
+
+        print('Magic Point: {}/{}'.format(mp_correct_px, mp_total_px))
+
+        # orb detector
+        orb_total_px = len(kp)
+        orb_correct_px = 0
+
+        for point in kp:
+            
+            if correct((int(point.pt[1]), int(point.pt[0])), dataset_y[i]) == True:
+                orb_correct_px += 1
+
+        print('ORB: {}/{}'.format(orb_correct_px, orb_total_px))
 
         # plot the two results
         _, ax = plt.subplots(nrows=1, ncols=4,figsize=(15,10))
@@ -132,3 +167,5 @@ if __name__ == '__main__':
         ax[2].imshow(mp_yhat[i].reshape(screen_size[1], screen_size[0]), cmap='jet', alpha=0.5)
         ax[3].imshow(orb_result)
         plt.show()
+
+    # plot all of the actual results
