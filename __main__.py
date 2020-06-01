@@ -44,12 +44,22 @@ if __name__ == '__main__':
     # TRAINING GENERATORS
     tri_data_generator = generate_images(object_types=['triangle'], batch_size=1000, object_count=50, display_mode=1, shape = screen_size, single_channel=True)
     quad_data_generator = generate_images(object_types=['quad'], batch_size=1000, object_count=50, display_mode=1, shape = screen_size, single_channel=True)
-    quadtri_data_generator = generate_images(object_types=['quad','triangle'], batch_size=1000, object_count=5, display_mode=1, shape = screen_size, single_channel=True)
-    check_data_generator = generate_images(object_types=['checkerboard'], batch_size=1000, object_count=1, display_mode=1, shape = screen_size, single_channel=True)
+    quadtri_data_generator = generate_images(object_types=['quad','triangle'], batch_size=1000, object_count=25, display_mode=1, shape = screen_size, single_channel=True)
+    check_data_generator = generate_images(object_types=['checkerboard'], batch_size=500, object_count=1, display_mode=1, shape = screen_size, single_channel=True)
     line_data_generator = generate_images(object_types=['line'], batch_size=1000, object_count=50, display_mode=1, shape = screen_size, single_channel=True)
-    star_data_generator = generate_images(object_types=['star'], batch_size=1000, object_count=1, display_mode=1, shape = screen_size, single_channel=True)
-    ellipse_data_generator = generate_images(object_types=['ellipse'], batch_size=1000, object_count=20, display_mode=1, shape = screen_size, single_channel=True)
-    cube_data_generator = generate_images(object_types=['cube'], batch_size=1000, object_count=1, display_mode=1, shape = screen_size, single_channel=True)
+    star_data_generator = generate_images(object_types=['star'], batch_size=1000, object_count=50, display_mode=1, shape = screen_size, single_channel=True)
+    ellipse_data_generator = generate_images(object_types=['ellipse'], batch_size=500, object_count=20, display_mode=1, shape = screen_size, single_channel=True)
+    cube_data_generator = generate_images(object_types=['cube'], batch_size=1000, object_count=50, display_mode=1, shape = screen_size, single_channel=True)
+
+    # VALIDATION GENERATORS
+    v_tri_data_generator = generate_images(object_types=['triangle'], batch_size=200, object_count=5, display_mode=1, shape = screen_size, single_channel=True)
+    v_quad_data_generator = generate_images(object_types=['quad'], batch_size=200, object_count=5, display_mode=1, shape = screen_size, single_channel=True)
+    v_check_data_generator = generate_images(object_types=['checkerboard'], batch_size=200, object_count=1, display_mode=1, shape = screen_size, single_channel=True)
+    v_line_data_generator = generate_images(object_types=['line'], batch_size=200, object_count=5, display_mode=1, shape = screen_size, single_channel=True)
+    v_star_data_generator = generate_images(object_types=['star'], batch_size=200, object_count=5, display_mode=1, shape = screen_size, single_channel=True)
+    v_ellipse_data_generator = generate_images(object_types=['ellipse'], batch_size=200, object_count=5, display_mode=1, shape = screen_size, single_channel=True)
+    v_cube_data_generator = generate_images(object_types=['cube'], batch_size=200, object_count=5, display_mode=1, shape = screen_size, single_channel=True)
+
 
     # make a list of generators to use for this instance
     used_data_generators = [
@@ -63,12 +73,23 @@ if __name__ == '__main__':
         cube_data_generator
     ]
 
+    used_v_data_generators = [
+        v_tri_data_generator,
+        v_quad_data_generator,
+        v_check_data_generator,
+        v_line_data_generator,
+        v_star_data_generator,
+        v_ellipse_data_generator,
+        v_cube_data_generator
+    ]
+
+    H = None
     model = None
     model_path = os.path.join(os.path.dirname(__file__), args["model"])
 
     if os.path.isfile(model_path) == True:
         response = input("continue training/using from current weights of {}? (y/n) ".format(args['model']))
-        if response.lower() == 'y' or response.lower() == 'yes':
+        if 'y' in response.lower() or 'yes' in response.lower():
             model = load_model(model_path, custom_objects={'tf':tf})
         else:
             print('Training model from scratch ...')
@@ -76,7 +97,7 @@ if __name__ == '__main__':
     onlyTesting = False
     if model is not None:
         response = input("skip to testing {} ? (y/n) ".format(args['model']))
-        if response.lower() == 'y' or response.lower() == 'yes':
+        if 'y' in response.lower() or 'yes' in response.lower():
             onlyTesting = True
 
     if model is None:
@@ -123,6 +144,9 @@ if __name__ == '__main__':
         print('*** START TRAINING ***')
         try:
 
+            # Training Dataset
+            print('Generating Training data...')
+            start = time.time()
             x_train, y_train = next(used_data_generators[0])
 
             for generator in used_data_generators[1:]:
@@ -130,7 +154,21 @@ if __name__ == '__main__':
                 x_train = np.concatenate((x_train, x))
                 y_train = np.concatenate((y_train, y))
 
-            model.fit(x_train, y_train, batch_size=32, epochs=32)
+            end = time.time()
+            diff = end - start
+            print("Time To Complete Rendering: {} seconds".format(diff))
+
+            # Validation Dataset
+            print('Generating Validation data...')
+            x_valid, y_valid = next(used_v_data_generators[0])
+
+            for generator in used_v_data_generators[1:]:
+                x, y = next(generator)
+                x_valid = np.concatenate((x_valid, x))
+                y_valid = np.concatenate((y_valid, y))
+
+            # do the training with train/validation
+            H = model.fit(x_train, y_train, validation_data=(x_valid, y_valid), batch_size=32, epochs=64)
 
         except KeyboardInterrupt as e:
             pass
@@ -168,9 +206,9 @@ if __name__ == '__main__':
     for x,y,y_hat in zip(x_test,y_test,y_test_hat):
 
         f, ax = plt.subplots(nrows=1, ncols=4,figsize=(15,10))
-        ax[0].imshow(x.reshape(screen_size[1],screen_size[0]))
-        ax[1].imshow(y.reshape(screen_size[1],screen_size[0]))
-        ax[2].imshow(y_hat.reshape(screen_size[1],screen_size[0]))
+        ax[0].imshow(x.reshape(screen_size[1],screen_size[0]), cmap='gray')
+        ax[1].imshow(y.reshape(screen_size[1],screen_size[0]), cmap='gray')
+        ax[2].imshow(y_hat.reshape(screen_size[1],screen_size[0]), cmap='gray')
 
         # resulting figure
         ax[3].imshow(x.reshape(120,160), cmap='gray')
@@ -178,3 +216,17 @@ if __name__ == '__main__':
 
         plt.show()
     # TESTING END
+
+    # Plot the training loss and accuracy
+    if H is not None:
+        plt.style.use("ggplot")
+        plt.figure()
+        plt.plot(np.arange(0, 64), H.history["loss"], label="train_loss")
+        plt.plot(np.arange(0, 64), H.history["val_loss"], label="val_loss")
+        plt.plot(np.arange(0, 64), H.history["accuracy"], label="train_acc")
+        plt.plot(np.arange(0, 64), H.history["val_accuracy"], label="val_acc")
+        plt.title("Training Loss and Accuracy on Synthetic Dataset")
+        plt.xlabel("Epoch #")
+        plt.ylabel("Loss/Accuracy")
+        plt.legend()
+        plt.show()
