@@ -61,6 +61,7 @@ class Checkerboard(ImageObject):
         glBegin(GL_QUADS)
         for square in self.squares:
             glColor(*square.color)
+            glNormal(0.0, 0.0, 1.0)
             for vertex in square.vertices:
                 glVertex(*vertex)
         glEnd()

@@ -127,13 +127,15 @@ class ImageObject(ABC):
             self.vertex_pixels_calculated = True
 
         if vertex_highlighting:
+            glDisable(GL_LIGHTING)
             glDisable(GL_TEXTURE_2D)
             glColor(*ImageObject.VERTEX_COLOR)
             glBegin(GL_POINTS)
             for v in self.vertices:
                 glVertex(v[0], v[1], v[2] + ImageObject.DEPTH_EPSILON)
             glEnd()
-            glEnable(GL_TEXTURE_2D) 
+            glEnable(GL_TEXTURE_2D)
+            glEnable(GL_LIGHTING)
 
     @abstractmethod
     def render(self, vertex_highlighting=False):

@@ -207,6 +207,16 @@ def init():
     """
     glEnable(GL_DEPTH_TEST)
 
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glEnable(GL_COLOR_MATERIAL)
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+    
+    glLight(GL_LIGHT0, GL_POSITION, (0.0, 10.0, 0.0, 1.0)) # positional light
+    glLight(GL_LIGHT0, GL_AMBIENT, (0.75, 0.75, 0.75))
+    glLight(GL_LIGHT0, GL_DIFFUSE, (0.2, 0.2, 0.2))
+    glLight(GL_LIGHT0, GL_SPECULAR, (1.0, 1.0, 1.0))
+
     glEnable(GL_TEXTURE_2D)
     glEnable(GL_LINE_SMOOTH)
     glClearColor(1.0, 1.0, 1.0, 0.0)
